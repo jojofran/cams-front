@@ -232,6 +232,64 @@ const showColumn = (index:any)=>{
 const carssValueList = ref<any>([]);
 const lisValueList = ref<any>([]);
 
+const mappingList = ref<any>([]); //Mapping Data in memory
+const unMappingList = ref<any>([]); //UnMapping Data in memory
+
+const uPageParams = <any>({
+	pageSize: 20,
+	currentPage: 1,
+	loading: true,
+	nomore: false,
+})
+;
+
+const pageParams = <any>({
+	pageSize: 20,
+	currentPage: 1,
+	loading: true,
+	nomore: false,
+});
+
+
+const loadMoreUnMapping = () => {
+	if (tableData_fail.value.length >= unMappingList.value.length) {
+		//当前页码数等于总页数的时候,提示没有更多数据了
+		uPageParams.loading = false;
+		uPageParams.nomore = true;
+	} else {
+		//当数据没有加载完的时候,继续加载数据
+		uPageParams.loading = true;
+		uPageParams.currentPage++; //当前页数字加一
+		tableData_fail.value.addList(page<any>(unMappingList.value, uPageParams.value.pageSize, (uPageParams.value.currentPage - 1) * uPageParams.value.pageSize));
+	}
+};
+
+const loadMoreMapping = () => {
+	
+	if (tableData_success.value.length >= mappingList.value.length) {
+		//当前页码数等于总页数的时候,提示没有更多数据了
+		pageParams.loading = false;
+		pageParams.nomore = true;
+	} else {
+		//当数据没有加载完的时候,继续加载数据
+		pageParams.loading = true;
+		pageParams.currentPage++; //当前页数字加一
+		tableData_success.value.addList(page<any>(unMappingList.value, uPageParams.value.pageSize, (uPageParams.value.currentPage - 1) * uPageParams.value.pageSize));
+	}
+};
+
+function page<T>(array: T[], limit: number, offset: number): T[] {
+	return take<T>(skip<T>(array, offset), limit);
+}
+
+function take<T>(array: T[], n: number): T[] {
+	return array.slice(0, n);
+}
+
+function skip<T>(array: T[], n: number): T[] {
+	return array.slice(n);
+}
+
 // 初始化表格数据
 const getTableData =async () => {
 	loading.value = true;
