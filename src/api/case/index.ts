@@ -1,9 +1,10 @@
+import { pa } from 'element-plus/es/locale';
 import request from '/@/utils/request';
 
 // 查询Case列表
 export const caseList = (params?: any) => 
 	request({
-		url: '/api/case/list' +'?timeFiled=&isInvalid=false',
+		url: '/api/case/list' +'?timeField='+params.value.timeField+'&isInvalid='+params.value.isInvalid,
 		method: 'post',
 		data: params.value,
 	});

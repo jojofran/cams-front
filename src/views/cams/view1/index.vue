@@ -5,10 +5,12 @@
 				<el-select v-model="queryParams.timeField" size="default" placeholder="请选择时间字段" style="max-width: 180px">
 					<el-option v-for="(item, index) in timeFieldList" :key="index" :value="item.value" :label="item.label" />
 				</el-select>
-				<el-date-picker start-placeholder="开始日期" end-placeholder="结束日期" v-model="dateRange"  value-format="YYYY/MM/DD" type="daterange" style="height:32px;" />
+				<el-date-picker start-placeholder="开始日期" end-placeholder="结束日期" v-model="dateRange" type="daterange" style="height:32px;" />
 				<el-input v-model="queryParams.id_num" size="default" placeholder="请输入病例号" style="max-width: 180px"> </el-input>
 				<el-input v-model="queryParams.keyword" size="default" placeholder="%姓名，菌种模糊查询%" style="max-width: 180px"> </el-input>
-				
+				<el-select v-model="queryParams.isInvalid" size="default" placeholder="是否查找错误数据" style="max-width: 180px">
+					<el-option v-for="(item, index) in isInvalidList" :key="index" :value="item.value" :label="item.label" />
+				</el-select>
 				<el-button size="default" type="primary" @click="getTableData()" class="ml10">
 					<el-icon>
 						<ele-Search />
@@ -96,11 +98,23 @@ const lisDialogTitle = ref('');
 const lisDialogRef = ref();
 const loading = ref(false);
 const tableData = ref<any>([]);
-const queryParams = ref<any>({});
+const queryParams = ref({
+	begin_time: '',
+	end_time: '',
+	limit: 10,
+	offset: 0,
+	timeField:'',
+	isInvalid:'',
+	keyword:null,
+	id_num:null
+
+});
+
 const tableParams = ref({
 	page: 1,
 	pageSize: 10,
 	total: 0,
+
 });
 
 const dateRange = ref<any>([]);
@@ -111,6 +125,11 @@ const timeFieldList = ref<any>([
 	{ label: '记录创建时间', value: 'CREATE_TIME' }
 ]);
 
+const isInvalidList = ref<any>([
+	{ label: '否', value: 'false' },
+	{ label: '是', value: 'true' },
+]);
+
 // 初始化表格数据
 const getTableData =async () => {
 	loading.value = true;
@@ -118,8 +137,7 @@ const getTableData =async () => {
 	queryParams.value.end_time = dateRange.value[1];
 	queryParams.value.limit = tableParams.value.pageSize;
 	queryParams.value.offset = tableParams.value.pageSize * (tableParams.value.page-1);
-	queryParams.value.isInvalid = false;
-	queryParams.value.timeField="";
+
 
 	var res = await caseList(queryParams);
 	var data = res.data;

@@ -3,6 +3,24 @@
 		<el-dialog :title="props.title" v-model="isShowDialog" width="769px">
 			<el-form ref="roleDialogFormRef" :model="ruleForm" size="default" label-width="150px" :rules="rules">
 				<el-row :gutter="35">
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="时间字段" prop="timeField">
+							<el-select v-model="ruleForm.timeField" placeholder="请选择时间字段" clearable class="w100">
+								<el-option v-for="(item, index) in timeFieldList" :key="index" :value="item.value" :label="item.label" />
+							</el-select>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="错误数据处理" prop="errorDataStrategy">
+							<!-- <el-select v-model="ruleForm.errorDataStrategy" placeholder="请选择错误数据处理策略" clearable class="w100">
+								<el-option v-for="(item, index) in errorDataStrategyList" :key="index" :value="item.value" :label="item.label" />
+							</el-select> -->
+							<el-radio-group v-model="ruleForm.errorDataStrategy">
+								<el-radio label="mark">标记</el-radio>
+								<el-radio label="ignore">忽略</el-radio>
+							</el-radio-group>
+						</el-form-item>
+					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
 						<el-form-item label="同步策略" prop="syncStrategy">
 							<!-- <el-select v-model="ruleForm.syncStrategy" placeholder="请选择同步策略" clearable class="w100">
@@ -34,24 +52,7 @@
 							/>
 						</el-form-item>
 					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="时间字段" prop="timeField">
-							<el-select v-model="ruleForm.timeField" placeholder="请选择时间字段" clearable class="w100">
-								<el-option v-for="(item, index) in timeFieldList" :key="index" :value="item.value" :label="item.label" />
-							</el-select>
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="错误数据处理" prop="errorDataStrategy">
-							<!-- <el-select v-model="ruleForm.errorDataStrategy" placeholder="请选择错误数据处理策略" clearable class="w100">
-								<el-option v-for="(item, index) in errorDataStrategyList" :key="index" :value="item.value" :label="item.label" />
-							</el-select> -->
-							<el-radio-group v-model="ruleForm.errorDataStrategy">
-								<el-radio label="mark">标记</el-radio>
-								<el-radio label="ignore">忽略</el-radio>
-							</el-radio-group>
-						</el-form-item>
-					</el-col>
+	
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="是否包含检验结果">
 							<el-radio-group v-model="ruleForm.includeResult">
