@@ -48,7 +48,7 @@ export function wavesDirective(app: App) {
 			el.addEventListener('mousedown', onCurrentClick, false);
 		},
 		unmounted(el) {
-			el.addEventListener('mousedown', () => {});
+			el.addEventListener('mousedown', () => { });
 		},
 	});
 }
@@ -174,5 +174,25 @@ export function dragDirective(app: App) {
 				};
 			};
 		},
+	});
+}
+
+
+export function loadMoreDirective(app: App<any>) {
+
+	app.directive('loadMore', {
+		mounted(el, binding) {
+			const selectWrap = el.querySelector('.el-table__body-wrapper') as HTMLElement;
+			selectWrap.addEventListener('scroll', function () {
+				let sign = 0
+
+
+
+				const scrollDistance = this.scrollHeight - this.scrollTop - this.clientHeight
+				if (scrollDistance <= sign) {
+					binding.value()
+				}
+			})
+		}
 	});
 }
