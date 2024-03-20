@@ -102,28 +102,12 @@ const roleDialogFormRef = ref();
 const isShowDialog = ref(false);
 const ruleForm = ref<any>({});
 
-const strategyList = ref<any>([
-	{ label: '覆盖', value: 'overwrite' },
-	{ label: '增量', value: 'increment' }
-]);
 
-const timeFieldList = ref<any>([
-	{ label: '样本采集日期', value: 'SPECIMEN_COLLECTION_DATE' },
-	{ label: '样本核收日期', value: 'SPECIMEN_CHECKIN_DATE' },
-	{ label: '记录创建时间', value: 'CREATE_TIME' }
-]);
-
-const errorDataStrategyList = ref<any>([
-	{ label: '标记', value: 'mark' },
-	{ label: '忽略', value: 'ignore' }
-]);
 
 //自行添加其他规则
 const rules = ref<FormRules>({
-	syncStrategy: [{required: true, message: '请选择同步策略', trigger: 'blur',},],
 	beginTime: [{required: true, message: '请选择开始时间', trigger: 'blur',},],
 	endTime: [{required: true, message: '请选择结束时间', trigger: 'blur',},],
-	errorDataStrategy: [{required: true, message: '请选择错误数据处理策略', trigger: 'blur',},],
 	timeField: [{required: true, message: '请选择时间字段', trigger: 'blur',},],
 });
 

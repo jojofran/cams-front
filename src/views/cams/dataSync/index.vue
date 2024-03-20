@@ -16,6 +16,12 @@
 					</el-icon>
 					同步数据
 				</el-button>
+				<el-button size="default" type="success" class="ml10" @click="onOpenClear()">
+					<el-icon>
+						<ele-FolderAdd />
+					</el-icon>
+					清除数据
+				</el-button>
 			</div>
 			<el-table :data="tableData" v-loading="loading" style="width: 100%">
 				<el-table-column type="index" label="序号" width="60" />
@@ -45,6 +51,7 @@
 			</el-pagination>
 		</div>
 		<SyncDialog ref="syncDialogRef" :title="syncDialogTitle" @refresh="getTableData" />
+		<clearDialog ref="clearDialog" :title="clearDialogTitle" />
 		<LogDialog ref="logDialogRef" title="日志记录详情"/>
 	</div>
 </template>
@@ -56,6 +63,7 @@ import moment from 'moment';
 import SyncDialog from '/@/views/cams/dataSync/syncDialog.vue';
 import LogDialog from '/@/views/cams/dataSync/logDialog.vue';
 import { taskList,syncCreate,gettaskLogs } from '/@/api/view/index';
+import clearDialog from '/@/views/cams/dataSync/clearDialog.vue';
 
 // const useSourceApi = sourceApi();
 
@@ -65,6 +73,8 @@ import { taskList,syncCreate,gettaskLogs } from '/@/api/view/index';
 // 定义变量内容
 const syncDialogTitle = ref('');
 const syncDialogRef = ref();
+const clearDialogTitle= ref('');
+const clearDialogRef= ref();
 const logDialogRef = ref();
 
 const loading = ref(false);
@@ -103,6 +113,13 @@ const onOpenAdd = () => {
 	syncDialogTitle.value = '数据同步';
 	syncDialogRef.value.openDialog();
 };
+
+const onOpenClear = () => {
+	clearDialogTitle.value = '数据清除';
+	clearDialogRef.value.openDialog();
+};
+
+
 
 // 打开详情
 const onOpenDetail = (row:any) => {
