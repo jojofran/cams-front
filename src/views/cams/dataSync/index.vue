@@ -17,9 +17,7 @@
 					同步数据
 				</el-button>
 				<el-button size="default" type="success" class="ml10" @click="onOpenClear()">
-					<el-icon>
-						<ele-FolderAdd />
-					</el-icon>
+				
 					清除数据
 				</el-button>
 			</div>
@@ -51,7 +49,7 @@
 			</el-pagination>
 		</div>
 		<SyncDialog ref="syncDialogRef" :title="syncDialogTitle" @refresh="getTableData" />
-		<clearDialog ref="clearDialog" :title="clearDialogTitle" />
+		<clearDialog ref="clearDialogRef" title="clearDialogTitle"  @refresh="getTableData" />
 		<LogDialog ref="logDialogRef" title="日志记录详情"/>
 	</div>
 </template>
@@ -116,7 +114,7 @@ const onOpenAdd = () => {
 
 const onOpenClear = () => {
 	clearDialogTitle.value = '数据清除';
-	clearDialogRef.value.openDialog();
+	clearDialogRef.value.openWindow();
 };
 
 

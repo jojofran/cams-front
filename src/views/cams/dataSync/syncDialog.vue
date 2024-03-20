@@ -120,10 +120,7 @@ const errorDataStrategyList = ref<any>([
 
 //自行添加其他规则
 const rules = ref<FormRules>({
-	syncStrategy: [{required: true, message: '请选择同步策略', trigger: 'blur',},],
-	beginTime: [{required: true, message: '请选择开始时间', trigger: 'blur',},],
 	endTime: [{required: true, message: '请选择结束时间', trigger: 'blur',},],
-	errorDataStrategy: [{required: true, message: '请选择错误数据处理策略', trigger: 'blur',},],
 	timeField: [{required: true, message: '请选择时间字段', trigger: 'blur',},],
 });
 

@@ -3,17 +3,15 @@
 		<el-dialog :title="props.title" v-model="isShowDialog" width="769px">
 			<el-form ref="roleDialogFormRef" :model="ruleForm" size="default" label-width="150px" :rules="rules">
 				<el-row :gutter="35">
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="同步策略" prop="syncStrategy">
-							<!-- <el-select v-model="ruleForm.syncStrategy" placeholder="请选择同步策略" clearable class="w100">
-								<el-option v-for="(item, index) in strategyList" :key="index" :value="item.value" :label="item.label" />
-							</el-select> -->
-							<el-radio-group v-model="ruleForm.syncStrategy">
-								<el-radio label="overwrite">覆盖</el-radio>
-								<el-radio label="increment">增量</el-radio>
-							</el-radio-group>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="时间字段" prop="timeField">
+							<el-select v-model="ruleForm.timeField" placeholder="请选择时间字段" clearable class="w100">
+								<el-option v-for="(item, index) in timeFieldList" :key="index" :value="item.value" :label="item.label" />
+							</el-select>
 						</el-form-item>
 					</el-col>
+				</el-row>
+				<el-row :gutter="35">
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="开始时间" prop="beginTime">
 							<el-date-picker
@@ -34,41 +32,7 @@
 							/>
 						</el-form-item>
 					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="时间字段" prop="timeField">
-							<el-select v-model="ruleForm.timeField" placeholder="请选择时间字段" clearable class="w100">
-								<el-option v-for="(item, index) in timeFieldList" :key="index" :value="item.value" :label="item.label" />
-							</el-select>
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="错误数据处理" prop="errorDataStrategy">
-							<!-- <el-select v-model="ruleForm.errorDataStrategy" placeholder="请选择错误数据处理策略" clearable class="w100">
-								<el-option v-for="(item, index) in errorDataStrategyList" :key="index" :value="item.value" :label="item.label" />
-							</el-select> -->
-							<el-radio-group v-model="ruleForm.errorDataStrategy">
-								<el-radio label="mark">标记</el-radio>
-								<el-radio label="ignore">忽略</el-radio>
-							</el-radio-group>
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="是否包含检验结果">
-							<el-radio-group v-model="ruleForm.includeResult">
-								<el-radio :label="true">是</el-radio>
-								<el-radio :label="false">否</el-radio>
-							</el-radio-group>
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="是否转换数据">
-							<el-radio-group v-model="ruleForm.isConvert">
-								<el-radio :label="true">是</el-radio>
-								<el-radio :label="false">否</el-radio>
-							</el-radio-group>
-						</el-form-item>
-					</el-col>
-
+				
 				</el-row>
 			</el-form>
 			<template #footer>
@@ -84,7 +48,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { ElMessage,FormRules } from "element-plus";
-import { syncCreate } from '/@/api/view/index';
+import { Clear } from '/@/api/view/index';
 
 // 定义子组件向父组件传值/事件
 const emit = defineEmits(['refresh']);
@@ -111,13 +75,15 @@ const rules = ref<FormRules>({
 	timeField: [{required: true, message: '请选择时间字段', trigger: 'blur',},],
 });
 
+const timeFieldList = ref<any>([
+	{ label: '样本采集日期', value: 'SPECIMEN_COLLECTION_DATE' },
+	{ label: '样本核收日期', value: 'SPECIMEN_CHECKIN_DATE' },
+	{ label: '记录创建时间', value: 'CREATE_TIME' }
+]);
+
 // 打开弹窗
-const openDialog = () => {
+const openWindow = () => {
 	ruleForm.value = {};
-	ruleForm.value.syncStrategy = 'overwrite';
-	ruleForm.value.errorDataStrategy = 'mark';
-	ruleForm.value.includeResult = true;
-	ruleForm.value.isConvert = true;
   	isShowDialog.value = true;
 };
 // 关闭弹窗
@@ -133,10 +99,11 @@ const onCancel = () => {
 
 // 提交
 const onSubmit = () => {
+	alert(1111)
   roleDialogFormRef.value.validate(async (isValid: boolean, fields?: any) => {
     if (isValid) {
       let values = ruleForm.value;
-      syncCreate(values);
+      Clear(values);
 	  emit('refresh');
       closeDialog();
     } else {
@@ -150,7 +117,7 @@ const onSubmit = () => {
 
 // 暴露变量
 defineExpose({
-	openDialog,
+	openWindow,
 });
 </script>
 
