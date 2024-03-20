@@ -100,16 +100,16 @@
 									<el-select
 										v-model="scope.row.target_attr_1"
 										:remote-method="remoteMethod"
-										multiple
+						
 										filterable
 										remote
 										@change="(val) => handleSelectChange(val, scope.row)"
 										:loading="sloading"
 										placeholder="请选择CARSS字典值"
-										clearable
+					
 										style="width: 100%; height: 24px; text-align: center"
 									>
-										<el-option v-for="item in targetOptions" :key="item.attr_1" :label="item.attr_1" :value="item.attr_1">
+										<el-option v-for="(item, index) in targetOptions" :key="item.attr_1" :label="item.attr_1" :value="item.attr_1">
 											<span style="float: left; color: #fc5531; font-size: 13px">{{ item.attr_1 }}</span>
 											<span style="float: right; color: #fc5531">{{ item.attr_2 }}</span>
 											<span style="float: left; color: #fc5531; font-size: 13px">{{ item.attr_3 }}</span>
@@ -216,17 +216,17 @@ const initMappingConceptList = async (queryMappingConceptParams: any) => {
 	MappingConcepts.value = data;
 
 	//get UnMappingConcepts by getting diff between mappingList and lis_map value list
-
 	for (var i = 0; i < lisValueList.value.length; i++) {
 		var bl = false;
 		for (var j = 0; j < MappingConcepts.value.length; j++) {
+			
 			if (
-				lisValueList.value[i].attr_1 == MappingConcepts.value[j].source_attr_1 &&
-				lisValueList.value[i].attr_2 == MappingConcepts.value[j].source_attr_2 &&
-				lisValueList.value[i].attr_3 == MappingConcepts.value[j].source_attr_3 &&
-				lisValueList.value[i].attr_4 == MappingConcepts.value[j].source_attr_4 &&
-				lisValueList.value[i].attr_5 == MappingConcepts.value[j].source_attr_5 &&
-				lisValueList.value[i].attr_6 == MappingConcepts.value[j].source_attr_6
+				(lisValueList.value[i].attr_1 == MappingConcepts.value[j].source_attr_1) &&
+				(lisValueList.value[i].attr_2 == MappingConcepts.value[j].source_attr_2 ) &&
+				(lisValueList.value[i].attr_3 == MappingConcepts.value[j].source_attr_3 || !lisValueList.value[i].attr_3) &&
+				(lisValueList.value[i].attr_4 == MappingConcepts.value[j].source_attr_4 || !lisValueList.value[i].attr_4) &&
+				(lisValueList.value[i].attr_5 == MappingConcepts.value[j].source_attr_5 || !lisValueList.value[i].attr_5) &&
+				(lisValueList.value[i].attr_6 == MappingConcepts.value[j].source_attr_6 || !lisValueList.value[i].attr_6)
 			) {
 				bl = true;
 				break;
@@ -382,7 +382,7 @@ const handelSaveData = async () => {
 
 //保存数据
 const saveData = async () => {
-	var addList = tableData_success.value;
+	var addList = MappingConcepts.value;
 	for (var i = 0; i < tableData_fail.value.length; i++) {
 		var obj = {
 			// id: 0,
@@ -437,7 +437,7 @@ const saveData = async () => {
 
 //覆盖数据
 const overWriteData = async () => {
-	var addList = tableData_success.value;
+	var addList = MappingConcepts.value;
 	for (var i = 0; i < tableData_fail.value.length; i++) {
 		var obj = {
 			// id: 0,
@@ -482,21 +482,24 @@ const overWriteData = async () => {
 		});
 	}
 	tableData_success.value = [];
-	tableData_fail.value = [];
+	tableData_fail.value = []; 
+	UnMappingConcepts.value=[];
+	MappingConcepts.value=[];
 	initMappingConceptList(queryMappingConceptParams);
 };
 
 // 表格中下拉框事件
 const handleSelectChange = (val: any, row: any) => {
 	var index = tableData_fail.value.indexOf(row);
+	
 	for (var i = 0; i < carssValueList.value.length; i++) {
 		if (carssValueList.value[i].attr_1 == val) {
-			if (carssValueList.value[i].attr_1 !== undefined) {
+			
 				tableData_fail.value[index].target_attr_1 = carssValueList.value[i].attr_1;
-			}
-			if (carssValueList.value[i].attr_2 !== undefined) {
+			
+			
 				tableData_fail.value[index].target_attr_2 = carssValueList.value[i].attr_2;
-			}
+			
 			if (carssValueList.value[i].attr_3 !== undefined) {
 				tableData_fail.value[index].target_attr_3 = carssValueList.value[i].attr_3;
 			}
@@ -521,13 +524,15 @@ const remoteMethod = (query: string) => {
 		setTimeout(() => {
 			sloading.value = false
 			for (var i = 0; i < carssValueList.value.length; i++) {
+
+				let r=carssValueList.value[i]
 				if (
-					(carssValueList.value[i].attr_1 && carssValueList.value[i].attr_1.includes(query)) ||
-					(carssValueList.value[i].attr_1 && carssValueList.value[i].attr_2.includes(query)) ||
-					(carssValueList.value[i].attr_1 && carssValueList.value[i].attr_3.includes(query)) ||
-					(carssValueList.value[i].attr_1 && carssValueList.value[i].attr_4.includes(query)) ||
-					(carssValueList.value[i].attr_1 && carssValueList.value[i].attr_5.includes(query)) ||
-					(carssValueList.value[i].attr_1 && carssValueList.value[i].attr_6.includes(query))
+					(r.attr_1 && r.attr_1.includes(query)) ||
+					(r.attr_2 && r.attr_2.includes(query)) ||
+					(r.attr_3 && r.attr_3.includes(query)) ||
+					(r.attr_4 && r.attr_4.includes(query)) ||
+					(r.attr_5 && r.attr_5.includes(query)) ||
+					(r.attr_6 && r.attr_6.includes(query))
 				) {
 					targetOptions.value.push(carssValueList.value[i]);
 				}
