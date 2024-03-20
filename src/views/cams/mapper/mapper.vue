@@ -13,27 +13,27 @@
 					<el-option v-for="item in fieldList" :key="item.code" :label="item.code" :value="item.code">
 					</el-option>
 				</el-select>
-				<el-button size="default" type="primary" v-if="showBtn" class="ml10" @click="getTableData()">
+				<el-button size="default" type="primary" v-if="showBtn" class="ml10" @click="match()">
 					<el-icon>
 						<ele-Setting />
 					</el-icon>
 					一键匹配
 				</el-button>
-				<el-button size="default" type="warning" v-if="!showBtn" class="ml10" @click="getTableData()">
+				<el-button size="default" type="warning" v-if="!showBtn" class="ml10" @click="match()">
 					<el-icon>
 						<ele-Refresh />
 					</el-icon>
 					重新匹配
 				</el-button>
-			</div>
+			</div> 
 			<el-tabs type="border-card">
 				<el-tab-pane label="已匹配">
-					<el-table :data="tableData_success" v-loading="loading" style="width: 100%;" height="500" stripe :header-cell-style="setTitle">
+					<el-table :data="tableData_success" v-loading="loading"  v-el-table-infinite-scroll="loadMoreMapping"  style="width: 100%;" height="500" stripe :header-cell-style="setTitle">
 						<el-table-column :label="tableTitleLeft" align="center">
 							<el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
-								<template #default="scope">
+								 <template #default="scope">
 									<span style="color:#004d8c">{{scope.row.source_attr_1}}</span>
-								</template>
+								</template> 
 							</el-table-column>
 							<el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
 							<el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
@@ -43,9 +43,9 @@
 						</el-table-column>
 						<el-table-column :label="tableTitleRight" align="center">
 							<el-table-column prop="target_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
-								<template #default="scope">
+								 <template #default="scope">
 									<span style="color:#fc5531">{{scope.row.target_attr_1}}</span>
-								</template>
+								</template> 
 							</el-table-column>
 							<el-table-column prop="target_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
 							<el-table-column prop="target_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
@@ -56,12 +56,12 @@
 					</el-table>
 				</el-tab-pane>
 				<el-tab-pane label="未匹配">
-					<el-table :data="tableData_fail" v-loading="loading" stripe style="width: 100%;" height="500" :header-cell-style="setTitle">
+					<el-table :data="tableData_fail" v-loading="loading"  v-el-table-infinite-scroll="loadMoreUnMapping" infinite-scroll-delay="20" infinite-scroll-immediate="false"  stripe style="width: 100%;" height="500" :header-cell-style="setTitle">
 						<el-table-column :label="tableTitleLeft" align="center">
 							<el-table-column prop="attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
-								<template #default="scope">
+								 <template #default="scope">
 									<span style="color:#004d8c">{{scope.row.attr_1}}</span>
-								</template>
+								</template> 
 							</el-table-column>
 							<el-table-column prop="attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
 							<el-table-column prop="attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
@@ -148,19 +148,7 @@ const mappingResInfo = ref<any>({});
 
 // 初始化数据
 const initData = async() => {
-	querySelectParams.value.limit = 100000;
-	querySelectParams.value.offset = 0;
-	querySelectParams.value.type = 'std_dic';
-	var res =await mapList(querySelectParams);
-	var data = res.data;
-	for(var i = 0;i<data.length;i++){
-		var obj = {
-			label:data[i].name,
-			value:data[i].code,
-			properties:data[i].properties
-		};
-		carssDicList.value.push(obj);
-	}
+
 	var resInfo = await mappingInfo(queryParams);
 	var dataInfo = resInfo.data;
 	mappingResInfo.value = dataInfo;
@@ -171,42 +159,51 @@ const initData = async() => {
 			selectFields.value.push(properties[j].code);
 		}
 	}
-	// getTableData();
+
 	queryMappingConceptParams.value.sourceCode = queryParams.value.source_code;
 	queryMappingConceptParams.value.targetCode = queryParams.value.target_code;
 	queryMappingConceptParams.value.limit = 100000;
 	queryMappingConceptParams.value.offset = 0;
-	getMappingConceptList(queryMappingConceptParams);
+	initMappingConceptList(queryMappingConceptParams);
 	getMappingValueList();
 
 };
 
-//获取匹配字段
-const getMappingConceptList = async (queryMappingConceptParams:any) => {
+//初始化已映射数据
+const initMappingConceptList = async (queryMappingConceptParams:any) => {
 	var res = await mappingConceptList(queryMappingConceptParams);
 	var data = res.data;
 	if(data.length){
 		showBtn.value = false;
 	}
-	tableData_success.value = data;
+
+	//put mapping concepts in memory
+	MappingConcepts.value = data;
+
+
+	//get UnMappingConcepts by getting diff between mappingList and lis_map value list
+	
 	for(var i=0;i<lisValueList.value.length;i++){
 		var bl = false;
-		for(var j=0;j<tableData_success.value.length;j++){
-			if(lisValueList.value[i].attr_1 == tableData_success.value[j].source_attr_1
-			&&lisValueList.value[i].attr_2 == tableData_success.value[j].source_attr_2
-			&&lisValueList.value[i].attr_3 == tableData_success.value[j].source_attr_3
-			&&lisValueList.value[i].attr_4 == tableData_success.value[j].source_attr_4
-			&&lisValueList.value[i].attr_5 == tableData_success.value[j].source_attr_5
-			&&lisValueList.value[i].attr_6 == tableData_success.value[j].source_attr_6
+		for(var j=0;j<MappingConcepts.value.length;j++){
+			if(lisValueList.value[i].attr_1 == MappingConcepts.value[j].source_attr_1
+			&&lisValueList.value[i].attr_2 == MappingConcepts.value[j].source_attr_2
+			&&lisValueList.value[i].attr_3 == MappingConcepts.value[j].source_attr_3
+			&&lisValueList.value[i].attr_4 == MappingConcepts.value[j].source_attr_4
+			&&lisValueList.value[i].attr_5 == MappingConcepts.value[j].source_attr_5
+			&&lisValueList.value[i].attr_6 == MappingConcepts.value[j].source_attr_6
 			){
 				bl = true;
 				break;
 			}
 		}
+
 		if(!bl){
-			tableData_fail.value.push(lisValueList.value[i]);
+			UnMappingConcepts.value.push(lisValueList.value[i]);
 		}
 	}
+
+	initScrollTable()
 }
 
 const getHeadLabel = (index:any)=>{
@@ -232,10 +229,10 @@ const showColumn = (index:any)=>{
 const carssValueList = ref<any>([]);
 const lisValueList = ref<any>([]);
 
-const mappingList = ref<any>([]); //Mapping Data in memory
-const unMappingList = ref<any>([]); //UnMapping Data in memory
+const MappingConcepts = ref<any>([]); //Mapping Data in memory
+const UnMappingConcepts = ref<any>([]); //UnMapping Data in memory
 
-const uPageParams = <any>({
+const uPageParams = ref<any>({
 	pageSize: 20,
 	currentPage: 1,
 	loading: true,
@@ -243,7 +240,7 @@ const uPageParams = <any>({
 })
 ;
 
-const pageParams = <any>({
+const pageParams = ref<any>({
 	pageSize: 20,
 	currentPage: 1,
 	loading: true,
@@ -252,55 +249,91 @@ const pageParams = <any>({
 
 
 const loadMoreUnMapping = () => {
-	if (tableData_fail.value.length >= unMappingList.value.length) {
+	if (uPageParams.value.nomore==true){
+		//没有数据
+		return
+	}
+
+	if (tableData_fail.value.length >= UnMappingConcepts.value.length) {
 		//当前页码数等于总页数的时候,提示没有更多数据了
-		uPageParams.loading = false;
-		uPageParams.nomore = true;
+		uPageParams.value.loading = false;
+		uPageParams.value.nomore = true;
+		// alert("no more data");
 	} else {
 		//当数据没有加载完的时候,继续加载数据
-		uPageParams.loading = true;
-		uPageParams.currentPage++; //当前页数字加一
-		tableData_fail.value.addList(page<any>(unMappingList.value, uPageParams.value.pageSize, (uPageParams.value.currentPage - 1) * uPageParams.value.pageSize));
+		uPageParams.value.loading = true;
+		uPageParams.value.currentPage++; //当前页数字加一
+
+		let startIndex=(uPageParams.value.currentPage-1)*uPageParams.value.pageSize
+		let endIndex=uPageParams.value.currentPage*uPageParams.value.pageSize
+		if (endIndex>=UnMappingConcepts.value.length){
+			endIndex=UnMappingConcepts.value.length-1
+		}
+
+		tableData_fail.value=tableData_fail.value.concat(UnMappingConcepts.value.slice(startIndex,endIndex))
 	}
 };
 
 const loadMoreMapping = () => {
 	
-	if (tableData_success.value.length >= mappingList.value.length) {
+	if (pageParams.value.nomore==true){
+		//没有数据
+		return
+	}
+
+	if (tableData_success.value.length >= MappingConcepts.value.length) {
 		//当前页码数等于总页数的时候,提示没有更多数据了
-		pageParams.loading = false;
-		pageParams.nomore = true;
+		pageParams.value.loading = false;
+		pageParams.value.nomore = true;
 	} else {
+		
 		//当数据没有加载完的时候,继续加载数据
-		pageParams.loading = true;
-		pageParams.currentPage++; //当前页数字加一
-		tableData_success.value.addList(page<any>(unMappingList.value, uPageParams.value.pageSize, (uPageParams.value.currentPage - 1) * uPageParams.value.pageSize));
+		pageParams.value.loading = true;
+		pageParams.value.currentPage++; //当前页数字加一
+		
+
+		let startIndex= (pageParams.value.currentPage-1)*pageParams.value.pageSize
+		let endIndex = (pageParams.value.currentPage)*pageParams.value.pageSize
+		if (endIndex>=UnMappingConcepts.value.length){
+			endIndex=UnMappingConcepts.value.length-1
+		}
+
+		tableData_success.value=tableData_success.value.concat(MappingConcepts.value.slice(startIndex,endIndex))
 	}
 };
 
-function page<T>(array: T[], limit: number, offset: number): T[] {
-	return take<T>(skip<T>(array, offset), limit);
-}
 
-function take<T>(array: T[], n: number): T[] {
-	return array.slice(0, n);
-}
-
-function skip<T>(array: T[], n: number): T[] {
-	return array.slice(n);
-}
-
-// 初始化表格数据
-const getTableData =async () => {
+// 自动匹配字典数据
+const match =async () => {
 	loading.value = true;
 	queryParams.value.properties = fieldList.value;
 	var res = await mappingMatch(queryParams.value);
-	tableData_success.value = res.data.mapping_concepts;
-	tableData_fail.value = res.data.unmapping_concepts;
+	
+	MappingConcepts.value = res.data.mapping_concepts;
+	UnMappingConcepts.value = res.data.unmapping_concepts;
+
+	initScrollTable();
+
+
 	setTimeout(() => {
 		loading.value = false;
 	}, 500);
 };
+
+const initScrollTable=()=>{
+	pageParams.value.currentPage = 0;
+	pageParams.value.pageSize = 20;
+	pageParams.value.loading = true;
+	pageParams.value.nomore = false;
+
+	uPageParams.value.currentPage = 0;
+	uPageParams.value.pageSize = 20;
+	uPageParams.value.loading = true;
+	uPageParams.value.nomore = false;
+
+	loadMoreMapping();
+	loadMoreUnMapping();
+}
 
 // 获取表格中下拉框的值
 const getMappingValueList = async () => {
@@ -313,7 +346,7 @@ const getMappingValueList = async () => {
 
 //保存数据
 const handelSaveData = async () => {
-	debugger
+	
 	if(showBtn.value){
 		saveData();
 	}else
@@ -374,7 +407,7 @@ const saveData = async () => {
 	}
 	tableData_success.value = [];
 	tableData_fail.value = [];
-	getMappingConceptList(queryMappingConceptParams);
+	initMappingConceptList(queryMappingConceptParams);
 }
 
 //覆盖数据
@@ -425,7 +458,7 @@ const overWriteData = async () => {
 	}
 	tableData_success.value = [];
 	tableData_fail.value = [];
-	getMappingConceptList(queryMappingConceptParams);
+	initMappingConceptList(queryMappingConceptParams);
 }
 
 // 表格中下拉框事件
@@ -452,7 +485,6 @@ const setTitle = (row:any) => {
 	if (row.columnIndex == 1 && len == 2){
 		return {'background':'#fc5531','color':'#FFFFFF'};
 	}
-	debugger
 	var columnCount = fieldList.value.length;
 	if (row.columnIndex < columnCount && len == columnCount * 2) {
 		return {'background':'#004d8c','color':'#FFFFFF'};
@@ -476,7 +508,7 @@ onMounted(async() => {
 	var res = await mapValueList(queryMappingValueParams);
 	lisValueList.value = res.data;
 
-	// getTableData();
+
 });
 </script>
 
