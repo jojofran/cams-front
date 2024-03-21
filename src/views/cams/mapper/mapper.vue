@@ -1,8 +1,6 @@
 <template>
 	<div>
 		<el-card shadow="hover" class="box-card" style="margin-top: 0px; height: 100%; width: 100%">
-			<!-- <el-descriptions title="基本信息" class="margin-top" :column="6" :border="false">
-			</el-descriptions> -->
 			<div class="system-user-search mb15">
 				<label>Lis字典：</label>
 				<el-input v-model="queryParams.source_code" size="default" placeholder="请输入" disabled style="max-width: 180px"> </el-input>
@@ -67,7 +65,14 @@
 							<el-table-column prop="target_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
 							<el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
 							<el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
+						
 						</el-table-column>
+						<el-table-column fixed="right" label="操作" style="fo"  width="100">
+							<template #default="scope">
+								<el-button @click="handleRemove(scope.row)" type="text" size="small">移除</el-button>
+							</template>
+						</el-table-column>
+						
 					</el-table>
 				</el-tab-pane>
 				<el-tab-pane label="未匹配">
@@ -99,21 +104,19 @@
 								<template #default="scope">
 									<el-select
 										v-model="scope.row.target_attr_1"
-										:remote-method="remoteMethod"
-						
+										:remote-method="queryTargetOptions"
 										filterable
 										remote
 										@change="(val) => handleSelectChange(val, scope.row)"
 										:loading="sloading"
 										placeholder="请选择CARSS字典值"
-					
 										style="width: 100%; height: 24px; text-align: center"
 									>
 										<el-option v-for="(item, index) in targetOptions" :key="item.attr_1" :label="item.attr_1" :value="item.attr_1">
-											<span style="float: left; color: #fc5531; font-size: 13px">{{ item.attr_1 }}</span>
-											<span style="float: right; color: #fc5531">{{ item.attr_2 }}</span>
-											<span style="float: left; color: #fc5531; font-size: 13px">{{ item.attr_3 }}</span>
-											<span style="float: right; color: #fc5531">{{ item.attr_4 }}</span>
+											<span style="float: center; color: #fc5531; font-size: 10px">{{ item.attr_1 }}</span>
+											<span style="float: center; color: #fc5531; margin-left: 15px">{{ item.attr_2 }}</span>
+											<span style="float: center; color: #fc5531; margin-left: 15px">{{ item.attr_3 }}</span>
+											<span style="float: center; color: #fc5531; margin-left: 15px">{{ item.attr_4 }}</span>
 										</el-option>
 									</el-select>
 								</template>
@@ -140,11 +143,10 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import {
-	mapList,
 	mappingMatch,
 	mapValueList,
 	modifyMappingConcepts,
@@ -156,53 +158,27 @@ import {
 import { fa } from 'element-plus/es/locale';
 
 const router = useRouter();
-// 定义变量内容
 
-const loading = ref(false);
+// 定义变量内容
 const sloading = ref(false);
 const tableData_success = ref<any>([]);
 const tableData_fail = ref<any>([]);
 const queryParams = ref<any>({
 	properties: [],
 });
-//查询字典值列表参数
-const queryMappingValueParams = ref<any>({});
+
 //查询映射数据列表参数
 const queryMappingConceptParams = ref<any>({});
-
 const targetOptions = ref<any>([]);
 
 const tableTitleLeft = ref('');
 const tableTitleRight = ref('');
-
 const showBtn = ref(true);
 
 //选中字段
 const selectFields = ref<any>([]);
-const carssDicList = ref<any>([]);
 const fieldList = ref<any>([]);
 const mappingResInfo = ref<any>({});
-
-// 初始化数据
-const initData = async () => {
-	var resInfo = await mappingInfo(queryParams);
-	var dataInfo = resInfo.data;
-	mappingResInfo.value = dataInfo;
-	var properties = JSON.parse(dataInfo.properties);
-	fieldList.value = properties;
-	for (var j = 0; j < properties.length; j++) {
-		if (properties[j].compare) {
-			selectFields.value.push(properties[j].code);
-		}
-	}
-
-	queryMappingConceptParams.value.sourceCode = queryParams.value.source_code;
-	queryMappingConceptParams.value.targetCode = queryParams.value.target_code;
-	queryMappingConceptParams.value.limit = 100000;
-	queryMappingConceptParams.value.offset = 0;
-	initMappingConceptList(queryMappingConceptParams);
-	getMappingValueList();
-};
 
 //初始化已映射数据
 const initMappingConceptList = async (queryMappingConceptParams: any) => {
@@ -219,14 +195,13 @@ const initMappingConceptList = async (queryMappingConceptParams: any) => {
 	for (var i = 0; i < lisValueList.value.length; i++) {
 		var bl = false;
 		for (var j = 0; j < MappingConcepts.value.length; j++) {
-			
 			if (
-				(lisValueList.value[i].attr_1 == MappingConcepts.value[j].source_attr_1) &&
-				(lisValueList.value[i].attr_2 == MappingConcepts.value[j].source_attr_2 ) &&
-				(lisValueList.value[i].attr_3 == MappingConcepts.value[j].source_attr_3 || !lisValueList.value[i].attr_3) &&
-				(lisValueList.value[i].attr_4 == MappingConcepts.value[j].source_attr_4 || !lisValueList.value[i].attr_4) &&
-				(lisValueList.value[i].attr_5 == MappingConcepts.value[j].source_attr_5 || !lisValueList.value[i].attr_5) &&
-				(lisValueList.value[i].attr_6 == MappingConcepts.value[j].source_attr_6 || !lisValueList.value[i].attr_6)
+				lisValueList.value[i].attr_1 == MappingConcepts.value[j].source_attr_1 &&
+				lisValueList.value[i].attr_2 == MappingConcepts.value[j].source_attr_2 &&
+				(!lisValueList.value[i].attr_3 || lisValueList.value[i].attr_3 == MappingConcepts.value[j].source_attr_3) &&
+				(!lisValueList.value[i].attr_4 || lisValueList.value[i].attr_4 == MappingConcepts.value[j].source_attr_4) &&
+				(!lisValueList.value[i].attr_5 || lisValueList.value[i].attr_5 == MappingConcepts.value[j].source_attr_5) &&
+				(!lisValueList.value[i].attr_6 || lisValueList.value[i].attr_6 == MappingConcepts.value[j].source_attr_6)
 			) {
 				bl = true;
 				break;
@@ -239,22 +214,6 @@ const initMappingConceptList = async (queryMappingConceptParams: any) => {
 	}
 
 	initScrollTable();
-};
-
-const getHeadLabel = (index: any) => {
-	if (index > fieldList.value.length - 1) {
-		return '';
-	} else {
-		return fieldList.value[index].code;
-	}
-};
-
-const showColumn = (index: any) => {
-	if (index > fieldList.value.length - 1) {
-		return false;
-	} else {
-		return true;
-	}
 };
 
 const carssValueList = ref<any>([]);
@@ -276,6 +235,7 @@ const pageParams = ref<any>({
 	nomore: false,
 });
 
+/** 未匹配表格滚动事件 */
 const loadMoreUnMapping = () => {
 	if (uPageParams.value.nomore == true) {
 		//没有数据
@@ -303,6 +263,7 @@ const loadMoreUnMapping = () => {
 	}
 };
 
+/** 已匹配表格滚动事件 */
 const loadMoreMapping = () => {
 	if (pageParams.value.nomore == true) {
 		//没有数据
@@ -331,9 +292,8 @@ const loadMoreMapping = () => {
 
 // 自动匹配字典数据
 const match = async () => {
-
-	pageParams.value.loading=true;
-	uPageParams.value.loading=true;
+	pageParams.value.loading = true;
+	uPageParams.value.loading = true;
 
 	queryParams.value.properties = fieldList.value;
 	var res = await mappingMatch(queryParams.value);
@@ -342,9 +302,21 @@ const match = async () => {
 	UnMappingConcepts.value = res.data.unmapping_concepts;
 
 	initScrollTable();
-
 };
 
+const handleRemove= (row:any)=>{     
+	alert(1)
+	var leftArray = MappingConcepts.value.slice(0,row.index);
+	var rightArray = MappingConcepts.value.slice(row.index+1);
+	MappingConcepts.value = leftArray.concat(rightArray);
+
+	var rightsliceArray = tableData_success.value.slice(row.index+1);
+	tableData_success.value = leftArray.concat(rightsliceArray);
+
+
+}
+
+/** 初始化滚动表格 */
 const initScrollTable = () => {
 	pageParams.value.currentPage = 0;
 	pageParams.value.pageSize = 20;
@@ -358,17 +330,6 @@ const initScrollTable = () => {
 
 	loadMoreMapping();
 	loadMoreUnMapping();
-
-
-};
-
-// 获取表格中下拉框的值
-const getMappingValueList = async () => {
-	queryMappingValueParams.value.limit = 10000;
-	queryMappingValueParams.value.offset = 0;
-	queryMappingValueParams.value.code = queryParams.value.target_code;
-	var res = await mapValueList(queryMappingValueParams);
-	carssValueList.value = res.data;
 };
 
 //保存数据
@@ -378,6 +339,12 @@ const handelSaveData = async () => {
 	} else {
 		overWriteData();
 	}
+
+	tableData_success.value = [];
+	tableData_fail.value = [];
+	UnMappingConcepts.value = [];
+	MappingConcepts.value = [];
+	initMappingConceptList(queryMappingConceptParams);
 };
 
 //保存数据
@@ -430,9 +397,6 @@ const saveData = async () => {
 			type: 'error',
 		});
 	}
-	tableData_success.value = [];
-	tableData_fail.value = [];
-	initMappingConceptList(queryMappingConceptParams);
 };
 
 //覆盖数据
@@ -481,11 +445,6 @@ const overWriteData = async () => {
 			type: 'error',
 		});
 	}
-	tableData_success.value = [];
-	tableData_fail.value = []; 
-	UnMappingConcepts.value=[];
-	MappingConcepts.value=[];
-	initMappingConceptList(queryMappingConceptParams);
 };
 
 // 表格中下拉框事件
@@ -494,9 +453,7 @@ const handleSelectChange = (val: any, row: any) => {
 	
 	for (var i = 0; i < carssValueList.value.length; i++) {
 		if (carssValueList.value[i].attr_1 == val) {
-			
 				tableData_fail.value[index].target_attr_1 = carssValueList.value[i].attr_1;
-			
 			
 				tableData_fail.value[index].target_attr_2 = carssValueList.value[i].attr_2;
 			
@@ -509,7 +466,6 @@ const handleSelectChange = (val: any, row: any) => {
 			if (carssValueList.value[i].attr_5 !== undefined) {
 				tableData_fail.value[index].target_attr_5 = carssValueList.value[i].attr_5;
 			}
-
 			if (tableData_fail.value[index].target_attr_6 && carssValueList.value[i].attr_6 !== undefined) {
 				tableData_fail.value[index].target_attr_6 = carssValueList.value[i].attr_6;
 			}
@@ -517,15 +473,15 @@ const handleSelectChange = (val: any, row: any) => {
 	}
 };
 
-const remoteMethod = (query: string) => {
+/**查询目标字典项 */
+const queryTargetOptions = (query: string) => {
 	if (query) {
 		sloading.value = true;
 		targetOptions.value = [];
 		setTimeout(() => {
-			sloading.value = false
+			sloading.value = false;
 			for (var i = 0; i < carssValueList.value.length; i++) {
-
-				let r=carssValueList.value[i]
+				let r = carssValueList.value[i];
 				if (
 					(r.attr_1 && r.attr_1.includes(query)) ||
 					(r.attr_2 && r.attr_2.includes(query)) ||
@@ -537,22 +493,62 @@ const remoteMethod = (query: string) => {
 					targetOptions.value.push(carssValueList.value[i]);
 				}
 			}
-		
-		}, 200);
+		}, 100);
 	} else {
 		targetOptions.value = [];
 	}
 };
 
+// 页面加载时
+onMounted(async () => {
+	queryParams.value.source_code = router.currentRoute.value.query.sourceCode;
+	queryParams.value.target_code = router.currentRoute.value.query.targetCode;
+
+	tableTitleLeft.value = router.currentRoute.value.query.sourceCode;
+	tableTitleRight.value = router.currentRoute.value.query.targetCode;
+
+	var resInfo = await mappingInfo(queryParams);
+	var dataInfo = resInfo.data;
+	mappingResInfo.value = dataInfo;
+
+	var properties = JSON.parse(dataInfo.properties);
+	fieldList.value = properties;
+	selectFields.value = properties.filter((p) => p.compare == true).map((p) => p.code);
+
+	await initMapConcepts(queryParams.value.source_code, queryParams.value.target_code);
+
+	queryMappingConceptParams.value.sourceCode = queryParams.value.source_code;
+	queryMappingConceptParams.value.targetCode = queryParams.value.target_code;
+	queryMappingConceptParams.value.limit = 100000;
+	queryMappingConceptParams.value.offset = 0;
+	initMappingConceptList(queryMappingConceptParams);
+});
+
+/**初始化源字典和目标字典的数据**/
+const initMapConcepts = async (sourcode: string, targetCode: string) => {
+	var query = ref<any>({ code: sourcode, limit: 10000, offset: 0 });
+	var sRes = await mapValueList(query);
+	lisValueList.value = sRes.data;
+
+	query.value.code = targetCode;
+	var res = await mapValueList(query);
+	carssValueList.value = res.data;
+};
+
 /**设置表头背景颜色 */
 const setTitle = (row: any) => {
 	var len = row.row.length;
-	if (row.columnIndex == 0 && len == 2) {
+	if (row.columnIndex == 0 && len == 3) {
 		return { background: '#004d8c', color: '#FFFFFF' };
 	}
-	if (row.columnIndex == 1 && len == 2) {
+	if (row.columnIndex == 1 && len == 3) {
 		return { background: '#fc5531', color: '#FFFFFF' };
 	}
+
+	if (row.columnIndex == 2 && len == 3) {
+		return { background: '#fc5531', color: '#FFFFFF' };
+	}
+
 	var columnCount = fieldList.value.length;
 	if (row.columnIndex < columnCount && len == columnCount * 2) {
 		return { background: '#004d8c', color: '#FFFFFF' };
@@ -562,20 +558,21 @@ const setTitle = (row: any) => {
 	}
 };
 
-// 页面加载时
-onMounted(async () => {
-	queryParams.value.source_code = router.currentRoute.value.query.sourceCode;
-	queryParams.value.target_code = router.currentRoute.value.query.targetCode;
-	tableTitleLeft.value = router.currentRoute.value.query.sourceCode;
-	tableTitleRight.value = router.currentRoute.value.query.targetCode;
+const getHeadLabel = (index: any) => {
+	if (index > fieldList.value.length - 1) {
+		return '';
+	} else {
+		return fieldList.value[index].code;
+	}
+};
 
-	initData();
-	queryMappingValueParams.value.limit = 10000;
-	queryMappingValueParams.value.offset = 0;
-	queryMappingValueParams.value.code = queryParams.value.source_code;
-	var res = await mapValueList(queryMappingValueParams);
-	lisValueList.value = res.data;
-});
+const showColumn = (index: any) => {
+	if (index > fieldList.value.length - 1) {
+		return false;
+	} else {
+		return true;
+	}
+};
 </script>
 
 <style scoped lang="scss">
