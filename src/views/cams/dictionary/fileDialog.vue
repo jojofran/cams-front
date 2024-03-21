@@ -4,18 +4,18 @@
 			<el-form ref="dialogFormRef" :model="ruleForm" size="default" label-width="120px" :rules="rules">
 				<el-row :gutter="35">
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="字典类型" prop="code">
-							<!-- <el-input v-model="ruleForm.code" placeholder="请输入字典编码" clearable></el-input> -->
-							<el-select v-model="sysDicSelectValue" placeholder="请选择字典类型" filterable clearable size="default">
-								<el-option v-for="(item, index) in dicTypeList" :key="index" :value="item.attr_1" :label="item.attr_2" />
-							</el-select>
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="系统厂商" prop="code">
 							<!-- <el-input v-model="ruleForm.code" placeholder="请输入字典编码" clearable></el-input> -->
 							<el-select v-model="sysVendorSelectValue" placeholder="请选择系统厂商" filterable clearable size="default">
 								<el-option v-for="(item, index) in sysVendorList" :key="index" :value="item.attr_1" :label="item.attr_2" />
+							</el-select>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="字典类型" prop="code">
+							<!-- <el-input v-model="ruleForm.code" placeholder="请输入字典编码" clearable></el-input> -->
+							<el-select v-model="sysDicSelectValue" placeholder="请选择字典类型" filterable clearable size="default">
+								<el-option v-for="(item, index) in dicTypeList" :key="index" :value="item.attr_1" :label="item.attr_2" />
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -89,6 +89,7 @@ const dicTypeList = ref<any>([]);
 const sysVendorList = ref<any>([]);
 const sysDicSelectValue = ref('');
 const sysVendorSelectValue = ref('');
+const dictype = ref('');
 
 //自行添加其他规则
 const rules = ref<FormRules>({
@@ -106,16 +107,16 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 }
 
 const submitUpload = () => {
-  var type = 'lis_dic';
+//   var type = 'lis_dic';
   ruleForm.value.code = sysDicSelectValue.value + '_'+ sysVendorSelectValue.value;
-  actionStr.value = 'http://192.168.1.7:5500/api/excel/import/'+ type + '/' + ruleForm.value.code;// + '/' + ruleForm.value.name;
+  actionStr.value = 'http://192.168.1.7:5500/api/excel/import/'+ dictype.value + '/' + ruleForm.value.code;// + '/' + ruleForm.value.name;
 
   upload.value!.submit()
 }
 
 
 // 打开弹窗
-const openDialog = async () => {
+const openDialog = async (type:any) => {
 	queryParams.value.limit = 100000;
 	queryParams.value.offset = 0;
 	queryParams.value.code = 'sys_dicType';
@@ -124,6 +125,7 @@ const openDialog = async () => {
 	queryParams.value.code = 'sys_vendor';
 	var res1 = await mapValueList(queryParams);
 	sysVendorList.value = res1.data
+	dictype.value = type;
 
   	isShowDialog.value = true;
 };
