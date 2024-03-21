@@ -102,7 +102,7 @@ const getTableData = async () => {
 // 打开上传文件页面
 const onOpeFileUpload = () => {
 	fileDialogTitle.value = '字典导入';
-	fileDialogRef.value.openDialog();
+	fileDialogRef.value.openDialog('std_dic');
 };
 
 // 打开映射页面
