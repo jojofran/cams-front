@@ -42,6 +42,8 @@
 						stripe
 						:header-cell-style="setTitle"
 					>
+						<el-table-column prop="source_code" width="auto" v-if="false" />
+						<el-table-column prop="targer_code" width="auto" v-if="false" />
 						<el-table-column :label="tableTitleLeft" align="center">
 							<el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
 								<template #default="scope">
@@ -65,15 +67,14 @@
 							<el-table-column prop="target_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
 							<el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
 							<el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
-						
 						</el-table-column>
-						<el-table-column fixed="right" label="操作" style="fo"  width="100">
+						<el-table-column fixed="right" label="操作" style="text-align: center" width="100">
 							<template #default="scope">
-								<el-button @click="handleRemove(scope.row)" type="text" size="small">移除</el-button>
+								<el-button type="danger" icon="el-icon-delete" @click="handleRemove(scope.row)" text size="mini" align="left">移除</el-button>
 							</template>
 						</el-table-column>
-						
 					</el-table>
+					<el-pagination class="mt15" layout="total" :total="MappingConcepts.length" />
 				</el-tab-pane>
 				<el-tab-pane label="未匹配">
 					<el-table
@@ -88,16 +89,18 @@
 						:header-cell-style="setTitle"
 					>
 						<el-table-column :label="tableTitleLeft" align="center">
-							<el-table-column prop="attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
+							<el-table-column prop="source_code" width="auto" v-if="false" />
+							<el-table-column prop="targer_code" width="auto" v-if="false" />
+							<el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
 								<template #default="scope">
-									<span style="color: #004d8c">{{ scope.row.attr_1 }}</span>
+									<span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
 								</template>
 							</el-table-column>
-							<el-table-column prop="attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)" />
-							<el-table-column prop="attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)" />
-							<el-table-column prop="attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
-							<el-table-column prop="attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
-							<el-table-column prop="attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
+							<el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)" />
+							<el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)" />
+							<el-table-column prop="source_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
+							<el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
+							<el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
 						</el-table-column>
 						<el-table-column :label="tableTitleRight" align="center">
 							<el-table-column prop="target_attr_1" :label="getHeadLabel(0)" width="auto" align="center" v-if="showColumn(0)">
@@ -127,7 +130,14 @@
 							<el-table-column prop="target_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
 							<el-table-column prop="target_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
 						</el-table-column>
+						<el-table-column fixed="right" align="center" label="操作" style="fo" width="100">
+							<template #default="scope">
+								<el-button type="danger" @click="handleClear(scope.row)" text size="mini">清空</el-button>
+								<el-button type="success" @click="handlerAdd(scope.row)" text size="mini">暂存</el-button>
+							</template>
+						</el-table-column>
 					</el-table>
+					<el-pagination class="mt15" layout="total" :total="UnMappingConcepts.length" />
 				</el-tab-pane>
 			</el-tabs>
 			<div style="text-align: left; margin-left: -10px">
@@ -146,15 +156,7 @@
 import { onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
-import {
-	mappingMatch,
-	mapValueList,
-	modifyMappingConcepts,
-	overwriteMappingConcepts,
-	mappingConceptList,
-	mappingList,
-	mappingInfo,
-} from '/@/api/dictionary/index';
+import { mappingMatch, mapValueList, overwriteMappingConcepts, mappingConceptList, mappingInfo } from '/@/api/dictionary/index';
 import { fa } from 'element-plus/es/locale';
 
 const router = useRouter();
@@ -209,18 +211,89 @@ const initMappingConceptList = async (queryMappingConceptParams: any) => {
 		}
 
 		if (!bl) {
-			UnMappingConcepts.value.push(lisValueList.value[i]);
+			debugger;
+			UnMappingConcepts.value.push(
+				getUMConceptByMap(queryMappingConceptParams.value.sourceCode, queryMappingConceptParams.value.targetCode, lisValueList.value[i])
+			);
 		}
 	}
 
 	initScrollTable();
 };
 
+class Concept {
+	source_code: string;
+	target_code: string;
+	source_attr_1: string;
+	source_attr_2: string;
+	source_attr_3: string;
+	source_attr_4: string;
+	source_attr_5: string;
+	source_attr_6: string;
+	target_attr_1: string;
+	target_attr_2: string;
+	target_attr_3: string;
+	target_attr_4: string;
+	target_attr_5: string;
+	target_attr_6: string;
+
+	constructor(
+		source_code: string,
+		target_code: string,
+		source_attr_1: string,
+		source_attr_2: string,
+		source_attr_3: string,
+		source_attr_4: string,
+		source_attr_5: string,
+		source_attr_6: string,
+		target_attr_1: string,
+		target_attr_2: string,
+		target_attr_3: string,
+		target_attr_4: string,
+		target_attr_5: string,
+		target_attr_6: string
+	) {
+		this.source_code = source_code;
+		this.target_code = target_code;
+		this.source_attr_1 = source_attr_1;
+		this.source_attr_2 = source_attr_2;
+		this.source_attr_3 = source_attr_3;
+		this.source_attr_4 = source_attr_4;
+		this.source_attr_5 = source_attr_5;
+		this.source_attr_6 = source_attr_6;
+		this.target_attr_1 = target_attr_1;
+		this.target_attr_2 = target_attr_2;
+		this.target_attr_3 = target_attr_3;
+		this.target_attr_4 = target_attr_4;
+		this.target_attr_5 = target_attr_5;
+		this.target_attr_6 = target_attr_6;
+	}
+}
+
+const getUMConceptByMap = (source_code: string, target_code: string, data: any): Concept => {
+	return new Concept(
+		source_code,
+		target_code,
+		data.attr_1 || '',
+		data.attr_2 || '',
+		data.attr_3 || '',
+		data.attr_4 || '',
+		data.attr_5 || '',
+		data.attr_6 || '',
+		'',
+		'',
+		'',
+		'',
+		'',
+		''
+	);
+};
+
 const carssValueList = ref<any>([]);
 const lisValueList = ref<any>([]);
 
-const MappingConcepts = ref<any>([]); //Mapping Data in memory
-const UnMappingConcepts = ref<any>([]); //UnMapping Data in memory
+const MappingConcepts = ref<Concept[]>([]); //Mapping Data in memory
+const UnMappingConcepts = ref<Concept[]>([]); //UnMapping Data in memory
 
 const uPageParams = ref<any>({
 	pageSize: 20,
@@ -228,6 +301,7 @@ const uPageParams = ref<any>({
 	loading: false,
 	nomore: false,
 });
+
 const pageParams = ref<any>({
 	pageSize: 20,
 	currentPage: 1,
@@ -304,17 +378,58 @@ const match = async () => {
 	initScrollTable();
 };
 
-const handleRemove= (row:any)=>{     
-	alert(1)
-	var leftArray = MappingConcepts.value.slice(0,row.index);
-	var rightArray = MappingConcepts.value.slice(row.index+1);
-	MappingConcepts.value = leftArray.concat(rightArray);
+/**移除已匹配元素 */
+const handleRemove = (row: Concept) => {
+	var index = tableData_success.value.indexOf(row);
 
-	var rightsliceArray = tableData_success.value.slice(row.index+1);
-	tableData_success.value = leftArray.concat(rightsliceArray);
+	var left = tableData_success.value.slice(0, index);
+	var right = tableData_success.value.slice(index + 1);
+	tableData_success.value = left.concat(right);
 
+	index = MappingConcepts.value.indexOf(row);
+	left = MappingConcepts.value.slice(0, index);
+	right = MappingConcepts.value.slice(index + 1);
+	MappingConcepts.value = left.concat(right);
 
-}
+	tableData_fail.value.unshift(row);
+	UnMappingConcepts.value.unshift(row);
+};
+
+/**清除选择 */
+const handleClear = (row: Concept) => {
+	row.target_attr_1 = '';
+	row.target_attr_2 = '';
+
+	if (row.target_attr_3 != undefined) {
+		row.target_attr_3 = '';
+	}
+	if (row.target_attr_4 != undefined) {
+		row.target_attr_4 = '';
+	}
+	if (row.target_attr_5 != undefined) {
+		row.target_attr_5 = '';
+	}
+	if (row.target_attr_6 != undefined) {
+		row.target_attr_6 = '';
+	}
+};
+
+/**暂存为已匹配 */
+const handlerAdd = (row: Concept) => {
+	var index = tableData_fail.value.indexOf(row);
+
+	var left = tableData_fail.value.slice(0, index);
+	var right = tableData_fail.value.slice(index + 1);
+	tableData_fail.value = left.concat(right);
+
+	index = UnMappingConcepts.value.indexOf(row);
+	left = UnMappingConcepts.value.slice(0, index);
+	right = UnMappingConcepts.value.slice(index + 1);
+	UnMappingConcepts.value = left.concat(right);
+
+	tableData_success.value.unshift(row);
+	MappingConcepts.value.unshift(row);
+};
 
 /** 初始化滚动表格 */
 const initScrollTable = () => {
@@ -334,11 +449,7 @@ const initScrollTable = () => {
 
 //保存数据
 const handelSaveData = async () => {
-	if (showBtn.value) {
-		saveData();
-	} else {
-		overWriteData();
-	}
+	await overWriteData();
 
 	tableData_success.value = [];
 	tableData_fail.value = [];
@@ -347,83 +458,9 @@ const handelSaveData = async () => {
 	initMappingConceptList(queryMappingConceptParams);
 };
 
-//保存数据
-const saveData = async () => {
-	var addList = MappingConcepts.value;
-	for (var i = 0; i < tableData_fail.value.length; i++) {
-		var obj = {
-			// id: 0,
-			source_attr_1: tableData_fail.value[i].attr_1,
-			source_attr_2: tableData_fail.value[i].attr_2,
-			source_attr_3: tableData_fail.value[i].attr_3,
-			source_attr_4: tableData_fail.value[i].attr_4,
-			source_attr_5: tableData_fail.value[i].attr_5,
-			source_attr_6: tableData_fail.value[i].attr_6,
-			source_code: queryParams.value.source_code,
-			target_attr_1: tableData_fail.value[i].target_attr_1,
-			target_attr_2: tableData_fail.value[i].target_attr_2,
-			target_attr_3: tableData_fail.value[i].target_attr_3,
-			target_attr_4: tableData_fail.value[i].target_attr_4,
-			target_attr_5: tableData_fail.value[i].target_attr_5,
-			target_attr_6: tableData_fail.value[i].target_attr_6,
-			target_code: queryParams.value.target_code,
-		};
-		if (obj.target_attr_1 != undefined) {
-			addList.push(obj);
-		}
-	}
-	var deleteList = [];
-	for (var i = 0; i < addList.length; i++) {
-		if (addList[i].id != undefined) {
-			deleteList.push(addList[i].id);
-		}
-	}
-
-	var parmObj = {
-		sourceCode: queryParams.value.source_code,
-		targetCode: queryParams.value.target_code,
-		adds: addList,
-		deletes: deleteList,
-	};
-	var res = await modifyMappingConcepts(parmObj);
-	if (res.data && res.message == 'success') {
-		ElMessage({
-			message: `保存成功`,
-			type: 'success',
-		});
-	} else {
-		ElMessage({
-			message: `失败成功`,
-			type: 'error',
-		});
-	}
-};
-
 //覆盖数据
 const overWriteData = async () => {
 	var addList = MappingConcepts.value;
-	for (var i = 0; i < tableData_fail.value.length; i++) {
-		var obj = {
-			// id: 0,
-			source_attr_1: tableData_fail.value[i].attr_1,
-			source_attr_2: tableData_fail.value[i].attr_2,
-			source_attr_3: tableData_fail.value[i].attr_3,
-			source_attr_4: tableData_fail.value[i].attr_4,
-			source_attr_5: tableData_fail.value[i].attr_5,
-			source_attr_6: tableData_fail.value[i].attr_6,
-			source_code: queryParams.value.source_code,
-			target_attr_1: tableData_fail.value[i].target_attr_1,
-			target_attr_2: tableData_fail.value[i].target_attr_2,
-			target_attr_3: tableData_fail.value[i].target_attr_3,
-			target_attr_4: tableData_fail.value[i].target_attr_4,
-			target_attr_5: tableData_fail.value[i].target_attr_5,
-			target_attr_6: tableData_fail.value[i].target_attr_6,
-			target_code: queryParams.value.target_code,
-		};
-		if (obj.target_attr_1 != undefined) {
-			addList.push(obj);
-		}
-	}
 	var parmObj = {
 		mappingConcepts: addList,
 		mappingInfo: {
@@ -450,13 +487,13 @@ const overWriteData = async () => {
 // 表格中下拉框事件
 const handleSelectChange = (val: any, row: any) => {
 	var index = tableData_fail.value.indexOf(row);
-	
+
 	for (var i = 0; i < carssValueList.value.length; i++) {
 		if (carssValueList.value[i].attr_1 == val) {
-				tableData_fail.value[index].target_attr_1 = carssValueList.value[i].attr_1;
-			
-				tableData_fail.value[index].target_attr_2 = carssValueList.value[i].attr_2;
-			
+			tableData_fail.value[index].target_attr_1 = carssValueList.value[i].attr_1;
+
+			tableData_fail.value[index].target_attr_2 = carssValueList.value[i].attr_2;
+
 			if (carssValueList.value[i].attr_3 !== undefined) {
 				tableData_fail.value[index].target_attr_3 = carssValueList.value[i].attr_3;
 			}
@@ -493,7 +530,7 @@ const queryTargetOptions = (query: string) => {
 					targetOptions.value.push(carssValueList.value[i]);
 				}
 			}
-		}, 100);
+		}, 1000);
 	} else {
 		targetOptions.value = [];
 	}
