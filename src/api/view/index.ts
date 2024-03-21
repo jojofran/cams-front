@@ -61,3 +61,12 @@ export const gettaskLogs = (task_id?: any) =>
 		url: '/api/sync/task/' + task_id  +'/logs',
 		method: 'get',
 	});
+
+
+// 数据清除
+export const Clear = (params?: any) =>
+request({
+	url: '/api/sync/clear',
+	method: 'post',
+	data: params,
+});

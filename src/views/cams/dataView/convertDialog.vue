@@ -33,6 +33,13 @@
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
 						<el-form-item label="源字段">
+							<el-select v-model="ruleForm.s_compare_code" placeholder="源字段" clearable style="width:200px;">
+								<el-option v-for="(item, index) in select_data" :key="index" :value="item.value" :label="item.label" />
+							</el-select>
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+						<el-form-item label="比对字段">
 							<el-select v-model="ruleForm.compare_code" placeholder="源字段" clearable style="width:200px;">
 								<el-option v-for="(item, index) in fieldList" :key="index" :value="item.value" :label="item.label" />
 							</el-select>
@@ -188,16 +195,43 @@ const getMappingList = async() =>{
 	}
 }
 
-// 增加数据类型行
-const addDataTypeRow = () => {
-	if (ruleForm.value.rulelist == undefined) ruleForm.value.rulelist = [];
-	ruleForm.value.rulelist?.push({});
-};
+const select_data = ref<any>([])
 
-// 删除数据类型行
-const deleteDataTypeRow = (k: number) => {
-	ruleForm.value.rulelist?.splice(k, 1);
-};
+
+
+const case_select_data = ref<any>([
+	{ label: "分院代码", value: "InstituteCode" },
+	{ label: "病历号", value: "PatientID" },
+	{ label: "病人姓名", value: "Name" },
+	{ label: "性别", value: "Sex" },
+	{ label: "年龄", value: "Age" },
+	{ label: "本院科室代码", value: "WardCode" },
+	{ label: "本院科室名称", value: "WardName" },
+	{ label: "CARSS 专业类别", value: "CarssDepartmentCode" },
+	{ label: "CHIFUNGI 专业类别", value: "ChifungiDepartmentCode" },
+	{ label: "样本号", value: "SpecimenNum" },
+	{ label: "样本类型", value: "SpecimenType" },
+	{ label: "样本名称", value: "SpecimenName" },
+	{ label: "菌种代码", value: "OrganismCode" },
+	{ label: "菌种名称", value: "OrganismName" },
+	{ label: "菌种类型", value: "OrganismType" },
+	{ label: "碳青霉烯酶基因类型", value: "Carbgene" }
+]);
+
+const result_select_data = ref<any>(  [
+	{ label: "样本号", value: "SpecimenNum" },
+	{ label: "药物代码", value: "AntibioticCode" },
+	{ label: "药物中文名称", value: "AntibioticCNName" },
+	{ label: "药敏方法", value: "Method" },
+	{ label: "药敏字段代码", value: "FieldCode" },
+	{ label: "药敏结果值", value: "TestValue" },
+	{ label: "药敏判定结果", value: "TestResult" },
+	{ label: "药敏仪器名称", value: "Instrument" },
+	{ label: "板卡型号", value: "CardMode" }
+]);
+
+
+
 
 // 打开弹窗
 const openRuleDialog = async (row: any,code:any) => {
@@ -208,7 +242,9 @@ const openRuleDialog = async (row: any,code:any) => {
 	ruleForm.value.target_code = '';
 	if(row != undefined){
 		var model = JSON.parse(JSON.stringify(row));
+	
 		ruleForm.value.property_code = model.code;
+		ruleForm.value.s_compare_code = model.code;
 		ruleForm.value.code = code;
 		var res = await getConverter(ruleForm.value.code,ruleForm.value.property_code);
 		if(res.data.code != undefined){
@@ -223,6 +259,15 @@ const openRuleDialog = async (row: any,code:any) => {
 				selectCarssChange(res.data.mapper_code);
 			}, 500);
 		}
+
+		if (ruleForm.value.code=="T_CASE"){
+			select_data.value=case_select_data.value
+		}else{
+			select_data.value=result_select_data.value
+		}
+
+
+	
 	}
   	isShowDialog.value = true;
 };

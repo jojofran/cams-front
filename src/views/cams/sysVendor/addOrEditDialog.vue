@@ -81,7 +81,7 @@ const rules = ref<FormRules>({
 // 打开弹窗
 const openDialog = (head:any,code:any,row: any) => {
 	tableheHead.value = head.value;
-
+	ruleForm.value = {};
 	debugger
 	mapCode.value = code;
 	if(row != undefined){
@@ -93,6 +93,7 @@ const openDialog = (head:any,code:any,row: any) => {
 const closeDialog = () => {
 	emit("refresh");
 	isShowDialog.value = false;
+	ruleForm.value = {};
 };
 // 取消
 const onCancel = () => {
