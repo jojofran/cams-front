@@ -516,20 +516,23 @@ onMounted(async () => {
   sourceCode.value = <string>router.currentRoute.value.query.sourceCode;
   targetCode.value = <string>router.currentRoute.value.query.targetCode;
 
-  var sMap = (await getMapInfo(sourceCode.value)).data
-  var tMap = (await getMapInfo(targetCode.value)).data
+  getMapInfo(sourceCode.value).then(res => {
+    sourceMapName.value = res.data.name;
+  });
+  getMapInfo(targetCode.value).then(res => {
+    targetMapName.value = res.data.name;
+  });
 
-  sourceMapName.value = sMap.name;
-  targetMapName.value = tMap.name;
 
+  mappingInfo(queryParams).then(res => {
+    mappingResInfo.value = res.data;
 
-  var resInfo = await mappingInfo(queryParams);
-  var dataInfo = resInfo.data;
-  mappingResInfo.value = dataInfo;
+    let properties = JSON.parse(res.data.properties);
+    fieldList.value = properties;
+    selectFields.value = properties.filter((p: any) => p.compare == true).map((p: any) => p.code);
 
-  var properties = JSON.parse(dataInfo.properties);
-  fieldList.value = properties;
-  selectFields.value = properties.filter((p: any) => p.compare == true).map((p: any) => p.code);
+  });
+
 
   await initMapConcepts(sourceCode.value, targetCode.value);
 
