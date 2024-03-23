@@ -1,180 +1,206 @@
 <template>
-	<div>
-		<el-card shadow="hover" class="box-card" style="margin-top: 0px; height: 100%; width: 100%">
-			<div class="system-user-search mb15">
-				<label>Lis字典：</label>
-				<el-input v-model="queryParams.source_code" size="default" placeholder="请输入" disabled style="max-width: 180px"> </el-input>
-				<label>Carss字典：</label>
-				<el-input v-model="queryParams.target_code" size="default" placeholder="请输入" disabled style="max-width: 180px"> </el-input>
-				<label>匹配字段：</label>
-				<el-select
-					v-model="selectFields"
-					multiple
-					@change="selectFieldChange"
-					disabled
-					placeholder="请选择匹配字段"
-					size="default"
-					style="width: 300px"
-				>
-					<el-option v-for="item in fieldList" :key="item.code" :label="item.code" :value="item.code"> </el-option>
-				</el-select>
-				<el-button size="default" type="primary" v-if="showBtn" class="ml10" @click="match()">
-					<el-icon>
-						<ele-Setting />
-					</el-icon>
-					一键匹配
-				</el-button>
-				<el-button size="default" type="warning" v-if="!showBtn" class="ml10" @click="match()">
-					<el-icon>
-						<ele-Refresh />
-					</el-icon>
-					重新匹配
-				</el-button>
-			</div>
-			<el-tabs type="border-card">
-				<el-tab-pane label="已匹配">
-					<el-table
-						:data="tableData_success"
-						v-loading="pageParams.loading"
-						v-el-table-infinite-scroll="loadMoreMapping"
-						style="width: 100%"
-						height="500"
-						stripe
-						:header-cell-style="setTitle"
-					>
-						<el-table-column prop="source_code" width="auto" v-if="false" />
-						<el-table-column prop="targer_code" width="auto" v-if="false" />
-						<el-table-column :label="tableTitleLeft" align="center">
-							<el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
-								<template #default="scope">
-									<span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
-								</template>
-							</el-table-column>
-							<el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)" />
-							<el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)" />
-							<el-table-column prop="source_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
-							<el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
-							<el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
-						</el-table-column>
-						<el-table-column :label="tableTitleRight" align="center">
-							<el-table-column prop="target_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
-								<template #default="scope">
-									<span style="color: #fc5531">{{ scope.row.target_attr_1 }}</span>
-								</template>
-							</el-table-column>
-							<el-table-column prop="target_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)" />
-							<el-table-column prop="target_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)" />
-							<el-table-column prop="target_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
-							<el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
-							<el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
-						</el-table-column>
-						<el-table-column fixed="right" label="操作" style="text-align: center" width="100">
-							<template #default="scope">
-								<el-button type="danger" icon="el-icon-delete" @click="handleRemove(scope.row)" text size="mini" align="left">移除</el-button>
-							</template>
-						</el-table-column>
-					</el-table>
-					<el-pagination class="mt15" layout="total" :total="MappingConcepts.length" />
-				</el-tab-pane>
-				<el-tab-pane label="未匹配">
-					<el-table
-						:data="tableData_fail"
-						v-loading="uPageParams.loading"
-						v-el-table-infinite-scroll="loadMoreUnMapping"
-						infinite-scroll-delay="20"
-						infinite-scroll-immediate="false"
-						stripe
-						style="width: 100%"
-						height="500"
-						:header-cell-style="setTitle"
-					>
-						<el-table-column :label="tableTitleLeft" align="center">
-							<el-table-column prop="source_code" width="auto" v-if="false" />
-							<el-table-column prop="targer_code" width="auto" v-if="false" />
-							<el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
-								<template #default="scope">
-									<span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
-								</template>
-							</el-table-column>
-							<el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)" />
-							<el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)" />
-							<el-table-column prop="source_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
-							<el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
-							<el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
-						</el-table-column>
-						<el-table-column :label="tableTitleRight" align="center">
-							<el-table-column prop="target_attr_1" :label="getHeadLabel(0)" width="auto" align="center" v-if="showColumn(0)">
-								<template #default="scope">
-									<el-select
-										v-model="scope.row.target_attr_1"
-										:remote-method="queryTargetOptions"
-										filterable
-										remote
-										@change="(val) => handleSelectChange(val, scope.row)"
-										:loading="sloading"
-										placeholder="请选择CARSS字典值"
-										style="width: 100%; height: 24px; text-align: center"
-									>
-										<el-option v-for="(item, index) in targetOptions" :key="item.attr_1" :label="item.attr_1" :value="item.attr_1">
-											<span style="float: center; color: #fc5531; font-size: 10px">{{ item.attr_1 }}</span>
-											<span style="float: center; color: #fc5531; margin-left: 15px">{{ item.attr_2 }}</span>
-											<span style="float: center; color: #fc5531; margin-left: 15px">{{ item.attr_3 }}</span>
-											<span style="float: center; color: #fc5531; margin-left: 15px">{{ item.attr_4 }}</span>
-										</el-option>
-									</el-select>
-								</template>
-							</el-table-column>
-							<el-table-column prop="target_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)" />
-							<el-table-column prop="target_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)" />
-							<el-table-column prop="target_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)" />
-							<el-table-column prop="target_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)" />
-							<el-table-column prop="target_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)" />
-						</el-table-column>
-						<el-table-column fixed="right" align="center" label="操作" style="fo" width="100">
-							<template #default="scope">
-								<el-button type="danger" @click="handleClear(scope.row)" text size="mini">清空</el-button>
-								<el-button type="success" @click="handlerAdd(scope.row)" text size="mini">暂存</el-button>
-							</template>
-						</el-table-column>
-					</el-table>
-					<el-pagination class="mt15" layout="total" :total="UnMappingConcepts.length" />
-				</el-tab-pane>
-			</el-tabs>
-			<div style="text-align: left; margin-left: -10px">
-				<el-button size="default" type="primary" class="ml10" @click="handelSaveData()" style="margin-top: 10px">
-					<el-icon>
-						<ele-Checked />
-					</el-icon>
-					保存数据
-				</el-button>
-			</div>
-		</el-card>
-	</div>
+  <div>
+    <el-card shadow="hover" class="box-card" style="margin-top: 0; height: 100%; width: 100%">
+      <div class="system-user-search mb15">
+        <label>Lis字典：</label>
+        <el-input v-model="sourceMapName" size="default" disabled style="max-width: 180px"></el-input>
+        <label>Carss字典：</label>
+        <el-input v-model="targetMapName" size="default" disabled style="max-width: 180px"></el-input>
+        <label>匹配字段：</label>
+        <el-select
+            v-model="selectFields"
+            multiple
+            disabled
+            size="default"
+            style="width: 300px"
+        >
+          <el-option v-for="item in fieldList" :key="item.code" :label="item.code" :value="item.code"></el-option>
+        </el-select>
+        <el-button size="default" type="primary" v-if="showBtn" class="ml10" @click="match()"
+                   :disabled="pageParams.loading">
+          <el-icon>
+            <ele-Setting/>
+          </el-icon>
+          一键匹配
+        </el-button>
+        <el-button size="default" type="warning" v-if="!showBtn" class="ml10" @click="match()"
+                   :disabled="pageParams.loading">
+          <el-icon>
+            <ele-Refresh/>
+          </el-icon>
+          重新匹配
+        </el-button>
+        <el-button size="default" type="success" v-if="!showBtn" class="ml10" @click="refresh()"
+                   :disabled="pageParams.loading">
+          <el-icon>
+            <ele-Refresh/>
+          </el-icon>
+          刷新
+        </el-button>
+      </div>
+      <el-tabs type="border-card">
+        <el-tab-pane label="已匹配">
+          <el-table
+              :data="tableData_success"
+              v-loading="pageParams.loading"
+              v-el-table-infinite-scroll="loadMoreMapping"
+              style="width: 100%"
+              height="500"
+              stripe
+              :header-cell-style="setTitle"
+          >
+
+            <el-table-column :label="sourceMapName" align="center">
+              <el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
+                <template #default="scope">
+                  <span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="source_code" width="auto" v-if="false"/>
+              <el-table-column prop="target_code" width="auto" v-if="false"/>
+              <el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
+              <el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
+              <el-table-column prop="source_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)"/>
+              <el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)"/>
+              <el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)"/>
+            </el-table-column>
+            <el-table-column :label="targetMapName" align="center">
+              <el-table-column prop="target_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
+                <template #default="scope">
+                  <span style="color: #fc5531">{{ scope.row.target_attr_1 }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="target_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
+              <el-table-column prop="target_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
+              <el-table-column prop="target_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)"/>
+              <el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)"/>
+              <el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)"/>
+            </el-table-column>
+            <el-table-column fixed="right" label="操作" style="text-align: center" width="100">
+              <template #default="scope">
+                <el-button type="danger" icon="el-icon-delete" @click="handleRemove(scope.row)" text size="mini">
+                  移除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination class="mt15" layout="total" :total="MappingConcepts.length"/>
+        </el-tab-pane>
+        <el-tab-pane label="未匹配">
+          <el-table
+              :data="tableData_fail"
+              v-loading="uPageParams.loading"
+              v-el-table-infinite-scroll="loadMoreUnMapping"
+              infinite-scroll-delay="20"
+              infinite-scroll-immediate="false"
+              stripe
+              style="width: 100%"
+              height="500"
+              :header-cell-style="setTitle"
+          >
+            <el-table-column :label="sourceMapName" align="center">
+              <el-table-column prop="source_code" width="auto" v-if="false"/>
+              <el-table-column prop="target_code" width="auto" v-if="false"/>
+              <el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
+                <template #default="scope">
+                  <span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
+              <el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
+              <el-table-column prop="source_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)"/>
+              <el-table-column prop="source_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)"/>
+              <el-table-column prop="source_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)"/>
+            </el-table-column>
+            <el-table-column :label="targetMapName" align="center">
+              <el-table-column prop="target_attr_1" :label="getHeadLabel(0)" width="auto" align="center"
+                               v-if="showColumn(0)">
+                <template #default="scope">
+                  <el-select
+                      v-model="scope.row.target_attr_1"
+                      :remote-method="queryTargetOptions"
+                      filterable
+                      remote
+                      @change="(val:any) =>{ handleSelectChange(val, scope.row); }"
+                      :loading="selectLoading"
+                      placeholder="请选择CARSS字典值"
+                      style="width: 100%; height: 24px; text-align: center"
+                  >
+                    <el-option v-for="(item) in targetOptions" :key="item.attr_1" :label="item.attr_1"
+                               :value="item.attr_1">
+                      <span style="float: none; color: #fc5531; font-size: 10px">{{ item.attr_1 || '' }}</span>
+                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_2 || '' }}</span>
+                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_3 || '' }}</span>
+                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_4 || '' }}</span>
+                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_5 || '' }}</span>
+                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_6 || '' }}</span>
+                    </el-option>
+                  </el-select>
+                </template>
+
+              </el-table-column>
+              <el-table-column prop="target_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
+              <el-table-column prop="target_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
+              <el-table-column prop="target_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)"/>
+              <el-table-column prop="target_attr_5" :label="getHeadLabel(4)" width="auto" v-if="showColumn(4)"/>
+              <el-table-column prop="target_attr_6" :label="getHeadLabel(5)" width="auto" v-if="showColumn(5)"/>
+            </el-table-column>
+            <el-table-column fixed="right" align="center" label="操作" width="100">
+              <template #default="scope">
+                <el-button type="danger" @click="handleClear(scope.row)" text size="mini">清空</el-button>
+                <el-button type="success" @click="handlerAdd(scope.row)" text size="mini">暂存</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination class="mt15" layout="total" :total="UnMappingConcepts.length"/>
+        </el-tab-pane>
+      </el-tabs>
+      <div style="text-align: left; margin-left: -10px">
+        <el-button size="default" type="primary" class="ml10" @click="handelSaveData()" style="margin-top: 10px"
+                   :disabled="pageParams.loading">
+          <el-icon>
+            <ele-Checked/>
+          </el-icon>
+          保存数据
+        </el-button>
+      </div>
+    </el-card>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
-import { useRouter } from 'vue-router';
-import { mappingMatch, mapValueList, overwriteMappingConcepts, mappingConceptList, mappingInfo } from '/@/api/dictionary/index';
-import { fa } from 'element-plus/es/locale';
+import {onMounted, ref} from 'vue';
+import {ElMessage} from 'element-plus';
+import {useRouter} from 'vue-router';
+import {
+  mappingMatch,
+  mapValueList,
+  overwriteMappingConcepts,
+  mappingConceptList,
+  mappingInfo,
+  getMapInfo,
+} from '/@/api/dictionary/index';
 
 const router = useRouter();
 
+// 定义关键变量
+const sourceCode = ref('');
+const targetCode = ref('');
+
 // 定义变量内容
-const sloading = ref(false);
+const selectLoading = ref(false);
 const tableData_success = ref<any>([]);
 const tableData_fail = ref<any>([]);
 const queryParams = ref<any>({
-	properties: [],
+  properties: [],
 });
 
 //查询映射数据列表参数
 const queryMappingConceptParams = ref<any>({});
-const targetOptions = ref<any>([]);
+const targetOptions = ref<MapConcept[]>([]);
 
-const tableTitleLeft = ref('');
-const tableTitleRight = ref('');
+const sourceMapName = ref('');
+const targetMapName = ref('');
 const showBtn = ref(true);
 
 //选中字段
@@ -183,470 +209,559 @@ const fieldList = ref<any>([]);
 const mappingResInfo = ref<any>({});
 
 //初始化已映射数据
-const initMappingConceptList = async (queryMappingConceptParams: any) => {
-	var res = await mappingConceptList(queryMappingConceptParams);
-	var data = res.data;
-	if (data.length) {
-		showBtn.value = false;
-	}
+const initMappingConceptList = async () => {
+  var res = await mappingConceptList(queryMappingConceptParams);
+  var data = res.data;
+  if (data.length) {
+    showBtn.value = false;
+  }
 
-	//put mapping concepts in memory
-	MappingConcepts.value = data;
+  //put mapping concepts in memory
+  MappingConcepts.value = data;
 
-	//get UnMappingConcepts by getting diff between mappingList and lis_map value list
-	for (var i = 0; i < lisValueList.value.length; i++) {
-		var bl = false;
-		for (var j = 0; j < MappingConcepts.value.length; j++) {
-			if (
-				lisValueList.value[i].attr_1 == MappingConcepts.value[j].source_attr_1 &&
-				lisValueList.value[i].attr_2 == MappingConcepts.value[j].source_attr_2 &&
-				(!lisValueList.value[i].attr_3 || lisValueList.value[i].attr_3 == MappingConcepts.value[j].source_attr_3) &&
-				(!lisValueList.value[i].attr_4 || lisValueList.value[i].attr_4 == MappingConcepts.value[j].source_attr_4) &&
-				(!lisValueList.value[i].attr_5 || lisValueList.value[i].attr_5 == MappingConcepts.value[j].source_attr_5) &&
-				(!lisValueList.value[i].attr_6 || lisValueList.value[i].attr_6 == MappingConcepts.value[j].source_attr_6)
-			) {
-				bl = true;
-				break;
-			}
-		}
+  //get UnMappingConcepts by getting diff between mappingList and lis_map value list
+  for (var i = 0; i < lisValueList.value.length; i++) {
+    var bl = false;
+    for (var j = 0; j < MappingConcepts.value.length; j++) {
+      if (
 
-		if (!bl) {
-			debugger;
-			UnMappingConcepts.value.push(
-				getUMConceptByMap(queryMappingConceptParams.value.sourceCode, queryMappingConceptParams.value.targetCode, lisValueList.value[i])
-			);
-		}
-	}
 
-	initScrollTable();
+          (!lisValueList.value[i].attr_1 || lisValueList.value[i].attr_1 == MappingConcepts.value[j].source_attr_1) &&
+          (!lisValueList.value[i].attr_2 || lisValueList.value[i].attr_2 == MappingConcepts.value[j].source_attr_2) &&
+          (!lisValueList.value[i].attr_3 || lisValueList.value[i].attr_3 == MappingConcepts.value[j].source_attr_3) &&
+          (!lisValueList.value[i].attr_4 || lisValueList.value[i].attr_4 == MappingConcepts.value[j].source_attr_4) &&
+          (!lisValueList.value[i].attr_5 || lisValueList.value[i].attr_5 == MappingConcepts.value[j].source_attr_5) &&
+          (!lisValueList.value[i].attr_6 || lisValueList.value[i].attr_6 == MappingConcepts.value[j].source_attr_6)
+      ) {
+        bl = true;
+        break;
+      }
+    }
+
+    if (!bl) {
+      UnMappingConcepts.value.push(
+          getUMConceptByMap(queryMappingConceptParams.value.sourceCode, queryMappingConceptParams.value.targetCode, lisValueList.value[i])
+      );
+    }
+  }
+
+  initScrollTable();
 };
 
-class Concept {
-	source_code: string;
-	target_code: string;
-	source_attr_1: string;
-	source_attr_2: string;
-	source_attr_3: string;
-	source_attr_4: string;
-	source_attr_5: string;
-	source_attr_6: string;
-	target_attr_1: string;
-	target_attr_2: string;
-	target_attr_3: string;
-	target_attr_4: string;
-	target_attr_5: string;
-	target_attr_6: string;
-
-	constructor(
-		source_code: string,
-		target_code: string,
-		source_attr_1: string,
-		source_attr_2: string,
-		source_attr_3: string,
-		source_attr_4: string,
-		source_attr_5: string,
-		source_attr_6: string,
-		target_attr_1: string,
-		target_attr_2: string,
-		target_attr_3: string,
-		target_attr_4: string,
-		target_attr_5: string,
-		target_attr_6: string
-	) {
-		this.source_code = source_code;
-		this.target_code = target_code;
-		this.source_attr_1 = source_attr_1;
-		this.source_attr_2 = source_attr_2;
-		this.source_attr_3 = source_attr_3;
-		this.source_attr_4 = source_attr_4;
-		this.source_attr_5 = source_attr_5;
-		this.source_attr_6 = source_attr_6;
-		this.target_attr_1 = target_attr_1;
-		this.target_attr_2 = target_attr_2;
-		this.target_attr_3 = target_attr_3;
-		this.target_attr_4 = target_attr_4;
-		this.target_attr_5 = target_attr_5;
-		this.target_attr_6 = target_attr_6;
-	}
-}
-
-const getUMConceptByMap = (source_code: string, target_code: string, data: any): Concept => {
-	return new Concept(
-		source_code,
-		target_code,
-		data.attr_1 || '',
-		data.attr_2 || '',
-		data.attr_3 || '',
-		data.attr_4 || '',
-		data.attr_5 || '',
-		data.attr_6 || '',
-		'',
-		'',
-		'',
-		'',
-		'',
-		''
-	);
-};
-
-const carssValueList = ref<any>([]);
-const lisValueList = ref<any>([]);
+const carssValueList = ref<MapConcept[]>([]);
+const lisValueList = ref<MapConcept[]>([]);
 
 const MappingConcepts = ref<Concept[]>([]); //Mapping Data in memory
 const UnMappingConcepts = ref<Concept[]>([]); //UnMapping Data in memory
 
 const uPageParams = ref<any>({
-	pageSize: 20,
-	currentPage: 1,
-	loading: false,
-	nomore: false,
+  pageSize: 10,
+  currentPage: 1,
+  loading: false,
+  nomore: false,
 });
 
 const pageParams = ref<any>({
-	pageSize: 20,
-	currentPage: 1,
-	loading: false,
-	nomore: false,
+  pageSize: 10,
+  currentPage: 1,
+  loading: false,
+  nomore: false,
 });
 
 /** 未匹配表格滚动事件 */
 const loadMoreUnMapping = () => {
-	if (uPageParams.value.nomore == true) {
-		//没有数据
-		return;
-	}
+  if (uPageParams.value.nomore == true) {
+    //没有数据
+    return;
+  }
 
-	if (tableData_fail.value.length >= UnMappingConcepts.value.length) {
-		//当前页码数等于总页数的时候,提示没有更多数据了
-		uPageParams.value.loading = false;
-		uPageParams.value.nomore = true;
-		// alert("no more data");
-	} else {
-		//当数据没有加载完的时候,继续加载数据
-		uPageParams.value.loading = true;
-		uPageParams.value.currentPage++; //当前页数字加一
+  if (tableData_fail.value.length >= UnMappingConcepts.value.length) {
+    //当前页码数等于总页数的时候,提示没有更多数据了
+    uPageParams.value.loading = false;
+    uPageParams.value.nomore = true;
+  } else {
+    //当数据没有加载完的时候,继续加载数据
+    uPageParams.value.loading = true;
+    uPageParams.value.currentPage++; //当前页数字加一
 
-		let startIndex = (uPageParams.value.currentPage - 1) * uPageParams.value.pageSize;
-		let endIndex = uPageParams.value.currentPage * uPageParams.value.pageSize;
-		if (endIndex >= UnMappingConcepts.value.length) {
-			endIndex = UnMappingConcepts.value.length - 1;
-		}
+    let startIndex = (uPageParams.value.currentPage - 1) * uPageParams.value.pageSize;
+    let endIndex = uPageParams.value.currentPage * uPageParams.value.pageSize;
+    if (endIndex >= UnMappingConcepts.value.length) {
+      endIndex = UnMappingConcepts.value.length - 1;
+    }
 
-		tableData_fail.value = tableData_fail.value.concat(UnMappingConcepts.value.slice(startIndex, endIndex));
-		uPageParams.value.loading = false;
-	}
+    tableData_fail.value = tableData_fail.value.concat(UnMappingConcepts.value.slice(startIndex, endIndex));
+    uPageParams.value.loading = false;
+  }
 };
 
 /** 已匹配表格滚动事件 */
 const loadMoreMapping = () => {
-	if (pageParams.value.nomore == true) {
-		//没有数据
-		return;
-	}
+  if (pageParams.value.nomore == true) {
+    //没有数据
+    return;
+  }
 
-	if (tableData_success.value.length >= MappingConcepts.value.length) {
-		//当前页码数等于总页数的时候,提示没有更多数据了
-		pageParams.value.loading = false;
-		pageParams.value.nomore = true;
-	} else {
-		//当数据没有加载完的时候,继续加载数据
-		pageParams.value.loading = true;
-		pageParams.value.currentPage++; //当前页数字加一
+  if (tableData_success.value.length >= MappingConcepts.value.length) {
+    pageParams.value.loading = false;
+    pageParams.value.nomore = true;
+  } else {
+    //当数据没有加载完的时候,继续加载数据
+    pageParams.value.loading = true;
+    pageParams.value.currentPage++; //当前页数字加一
 
-		let startIndex = (pageParams.value.currentPage - 1) * pageParams.value.pageSize;
-		let endIndex = pageParams.value.currentPage * pageParams.value.pageSize;
-		if (endIndex >= UnMappingConcepts.value.length) {
-			endIndex = UnMappingConcepts.value.length - 1;
-		}
+    let startIndex = (pageParams.value.currentPage - 1) * pageParams.value.pageSize;
+    let endIndex = pageParams.value.currentPage * pageParams.value.pageSize;
+    if (endIndex >= UnMappingConcepts.value.length) {
+      endIndex = UnMappingConcepts.value.length - 1;
+    }
 
-		tableData_success.value = tableData_success.value.concat(MappingConcepts.value.slice(startIndex, endIndex));
-		pageParams.value.loading = false;
-	}
+    tableData_success.value = tableData_success.value.concat(MappingConcepts.value.slice(startIndex, endIndex));
+    pageParams.value.loading = false;
+  }
 };
 
 // 自动匹配字典数据
 const match = async () => {
-	pageParams.value.loading = true;
-	uPageParams.value.loading = true;
+  pageParams.value.loading = true;
+  uPageParams.value.loading = true;
 
-	queryParams.value.properties = fieldList.value;
-	var res = await mappingMatch(queryParams.value);
+  initMemoryData();
+  queryParams.value.properties = fieldList.value;
+  var res = await mappingMatch(queryParams.value);
 
-	MappingConcepts.value = res.data.mapping_concepts;
-	UnMappingConcepts.value = res.data.unmapping_concepts;
+  MappingConcepts.value = res.data.mapping_concepts;
+  UnMappingConcepts.value = res.data.unmapping_concepts.map((element: any) => {
+    return getUMConceptByMap(sourceCode.value, targetCode.value, element);
+  });
 
-	initScrollTable();
+  initScrollTable();
 };
+
+const refresh = async () => {
+  initMemoryData()
+  await initMappingConceptList();
+}
+
+const removeRow = (array: Concept[], row: Concept): Concept[] => {
+
+  var index = array.indexOf(row)
+  var left = array.slice(0, index);
+  var right = array.slice(index + 1);
+  return left.concat(right);
+}
 
 /**移除已匹配元素 */
 const handleRemove = (row: Concept) => {
-	var index = tableData_success.value.indexOf(row);
 
-	var left = tableData_success.value.slice(0, index);
-	var right = tableData_success.value.slice(index + 1);
-	tableData_success.value = left.concat(right);
+  tableData_success.value = removeRow(tableData_success.value, row);
+  MappingConcepts.value = removeRow(MappingConcepts.value, row);
 
-	index = MappingConcepts.value.indexOf(row);
-	left = MappingConcepts.value.slice(0, index);
-	right = MappingConcepts.value.slice(index + 1);
-	MappingConcepts.value = left.concat(right);
-
-	tableData_fail.value.unshift(row);
-	UnMappingConcepts.value.unshift(row);
+  tableData_fail.value.unshift(row);
+  UnMappingConcepts.value.unshift(row);
 };
 
 /**清除选择 */
 const handleClear = (row: Concept) => {
-	row.target_attr_1 = '';
-	row.target_attr_2 = '';
+  row.target_attr_1 = '';
+  row.target_attr_2 = '';
 
-	if (row.target_attr_3 != undefined) {
-		row.target_attr_3 = '';
-	}
-	if (row.target_attr_4 != undefined) {
-		row.target_attr_4 = '';
-	}
-	if (row.target_attr_5 != undefined) {
-		row.target_attr_5 = '';
-	}
-	if (row.target_attr_6 != undefined) {
-		row.target_attr_6 = '';
-	}
+  if (row.target_attr_3) {
+    row.target_attr_3 = '';
+  }
+  if (row.target_attr_4) {
+    row.target_attr_4 = '';
+  }
+  if (row.target_attr_5) {
+    row.target_attr_5 = '';
+  }
+  if (row.target_attr_6) {
+    row.target_attr_6 = '';
+  }
 };
 
 /**暂存为已匹配 */
 const handlerAdd = (row: Concept) => {
-	var index = tableData_fail.value.indexOf(row);
 
-	var left = tableData_fail.value.slice(0, index);
-	var right = tableData_fail.value.slice(index + 1);
-	tableData_fail.value = left.concat(right);
+  if (row.source_code == '' || row.target_code == '' || row.target_attr_1 == '') {
+    return;
+  }
 
-	index = UnMappingConcepts.value.indexOf(row);
-	left = UnMappingConcepts.value.slice(0, index);
-	right = UnMappingConcepts.value.slice(index + 1);
-	UnMappingConcepts.value = left.concat(right);
+  tableData_fail.value = removeRow(tableData_fail.value, row);
+  UnMappingConcepts.value = removeRow(UnMappingConcepts.value, row);
 
-	tableData_success.value.unshift(row);
-	MappingConcepts.value.unshift(row);
+  tableData_success.value.unshift(row);
+  MappingConcepts.value.unshift(row);
 };
 
 /** 初始化滚动表格 */
 const initScrollTable = () => {
-	pageParams.value.currentPage = 0;
-	pageParams.value.pageSize = 20;
-	pageParams.value.loading = true;
-	pageParams.value.nomore = false;
+  pageParams.value.currentPage = 0;
+  pageParams.value.pageSize = 10;
+  pageParams.value.loading = true;
+  pageParams.value.nomore = false;
 
-	uPageParams.value.currentPage = 0;
-	uPageParams.value.pageSize = 20;
-	uPageParams.value.loading = true;
-	uPageParams.value.nomore = false;
+  uPageParams.value.currentPage = 0;
+  uPageParams.value.pageSize = 10;
+  uPageParams.value.loading = true;
+  uPageParams.value.nomore = false;
 
-	loadMoreMapping();
-	loadMoreUnMapping();
+
+  loadMoreMapping();
+  loadMoreUnMapping();
 };
 
 //保存数据
 const handelSaveData = async () => {
-	await overWriteData();
+  await overWriteData();
 
-	tableData_success.value = [];
-	tableData_fail.value = [];
-	UnMappingConcepts.value = [];
-	MappingConcepts.value = [];
-	initMappingConceptList(queryMappingConceptParams);
+  initMemoryData();
+  await initMappingConceptList();
 };
+
+const initMemoryData = () => {
+  tableData_success.value = [];
+  tableData_fail.value = [];
+  UnMappingConcepts.value = [];
+  MappingConcepts.value = [];
+}
 
 //覆盖数据
 const overWriteData = async () => {
-	var addList = MappingConcepts.value;
-	var parmObj = {
-		mappingConcepts: addList,
-		mappingInfo: {
-			id: mappingResInfo.value.id,
-			properties: mappingResInfo.value.properties,
-			source_code: mappingResInfo.value.source_code,
-			target_code: mappingResInfo.value.target_code,
-		},
-	};
-	var res = await overwriteMappingConcepts(parmObj);
-	if (res.data && res.message == 'success') {
-		ElMessage({
-			message: `保存成功`,
-			type: 'success',
-		});
-	} else {
-		ElMessage({
-			message: `失败成功`,
-			type: 'error',
-		});
-	}
+  var addList = MappingConcepts.value;
+  var parmObj = {
+    mappingConcepts: addList,
+    mappingInfo: {
+      id: mappingResInfo.value.id,
+      properties: mappingResInfo.value.properties,
+      source_code: mappingResInfo.value.source_code,
+      target_code: mappingResInfo.value.target_code,
+    },
+  };
+  var res = await overwriteMappingConcepts(parmObj);
+  if (res.data && res.message == 'success') {
+    ElMessage({
+      message: `保存成功`,
+      type: 'success',
+    });
+  } else {
+    ElMessage({
+      message: `失败成功`,
+      type: 'error',
+    });
+  }
 };
 
 // 表格中下拉框事件
 const handleSelectChange = (val: any, row: any) => {
-	var index = tableData_fail.value.indexOf(row);
+  var index = tableData_fail.value.indexOf(row);
 
-	for (var i = 0; i < carssValueList.value.length; i++) {
-		if (carssValueList.value[i].attr_1 == val) {
-			tableData_fail.value[index].target_attr_1 = carssValueList.value[i].attr_1;
+  for (var i = 0; i < carssValueList.value.length; i++) {
+    if (carssValueList.value[i].attr_1 && carssValueList.value[i].attr_1 == val) {
+      if (carssValueList.value[i].attr_1) {
+        tableData_fail.value[index].target_attr_1 = carssValueList.value[i].attr_1;
+      }
 
-			tableData_fail.value[index].target_attr_2 = carssValueList.value[i].attr_2;
+      if (carssValueList.value[i].attr_2) {
+        tableData_fail.value[index].target_attr_2 = carssValueList.value[i].attr_2;
+      }
 
-			if (carssValueList.value[i].attr_3 !== undefined) {
-				tableData_fail.value[index].target_attr_3 = carssValueList.value[i].attr_3;
-			}
-			if (carssValueList.value[i].attr_4 !== undefined) {
-				tableData_fail.value[index].target_attr_4 = carssValueList.value[i].attr_4;
-			}
-			if (carssValueList.value[i].attr_5 !== undefined) {
-				tableData_fail.value[index].target_attr_5 = carssValueList.value[i].attr_5;
-			}
-			if (tableData_fail.value[index].target_attr_6 && carssValueList.value[i].attr_6 !== undefined) {
-				tableData_fail.value[index].target_attr_6 = carssValueList.value[i].attr_6;
-			}
-		}
-	}
+      if (carssValueList.value[i].attr_3) {
+        tableData_fail.value[index].target_attr_3 = carssValueList.value[i].attr_3;
+      }
+      if (carssValueList.value[i].attr_4) {
+        tableData_fail.value[index].target_attr_4 = carssValueList.value[i].attr_4;
+      }
+      if (carssValueList.value[i].attr_5) {
+        tableData_fail.value[index].target_attr_5 = carssValueList.value[i].attr_5;
+      }
+      if (carssValueList.value[i].attr_6) {
+        tableData_fail.value[index].target_attr_6 = carssValueList.value[i].attr_6;
+      }
+    }
+  }
 };
 
 /**查询目标字典项 */
 const queryTargetOptions = (query: string) => {
-	if (query) {
-		sloading.value = true;
-		targetOptions.value = [];
-		setTimeout(() => {
-			sloading.value = false;
-			for (var i = 0; i < carssValueList.value.length; i++) {
-				let r = carssValueList.value[i];
-				if (
-					(r.attr_1 && r.attr_1.includes(query)) ||
-					(r.attr_2 && r.attr_2.includes(query)) ||
-					(r.attr_3 && r.attr_3.includes(query)) ||
-					(r.attr_4 && r.attr_4.includes(query)) ||
-					(r.attr_5 && r.attr_5.includes(query)) ||
-					(r.attr_6 && r.attr_6.includes(query))
-				) {
-					targetOptions.value.push(carssValueList.value[i]);
-				}
-			}
-		}, 1000);
-	} else {
-		targetOptions.value = [];
-	}
+  if (query) {
+    selectLoading.value = true;
+    targetOptions.value = [];
+    setTimeout(() => {
+      selectLoading.value = false;
+      for (var i = 0; i < carssValueList.value.length; i++) {
+        let r = carssValueList.value[i];
+        if (
+            (r.attr_1 && r.attr_1.includes(query)) ||
+            (r.attr_2 && r.attr_2.includes(query)) ||
+            (r.attr_3 && r.attr_3.includes(query)) ||
+            (r.attr_4 && r.attr_4.includes(query)) ||
+            (r.attr_5 && r.attr_5.includes(query)) ||
+            (r.attr_6 && r.attr_6.includes(query))
+        ) {
+          targetOptions.value.push(carssValueList.value[i]);
+        }
+      }
+    }, 1000);
+  } else {
+    targetOptions.value = [];
+  }
 };
 
 // 页面加载时
 onMounted(async () => {
-	queryParams.value.source_code = router.currentRoute.value.query.sourceCode;
-	queryParams.value.target_code = router.currentRoute.value.query.targetCode;
+  queryParams.value.source_code = router.currentRoute.value.query.sourceCode;
+  queryParams.value.target_code = router.currentRoute.value.query.targetCode;
 
-	tableTitleLeft.value = router.currentRoute.value.query.sourceCode;
-	tableTitleRight.value = router.currentRoute.value.query.targetCode;
+  sourceCode.value = <string>router.currentRoute.value.query.sourceCode;
+  targetCode.value = <string>router.currentRoute.value.query.targetCode;
 
-	var resInfo = await mappingInfo(queryParams);
-	var dataInfo = resInfo.data;
-	mappingResInfo.value = dataInfo;
+  var sMap = (await getMapInfo(sourceCode.value)).data
+  var tMap = (await getMapInfo(targetCode.value)).data
 
-	var properties = JSON.parse(dataInfo.properties);
-	fieldList.value = properties;
-	selectFields.value = properties.filter((p) => p.compare == true).map((p) => p.code);
+  sourceMapName.value = sMap.name;
+  targetMapName.value = tMap.name;
 
-	await initMapConcepts(queryParams.value.source_code, queryParams.value.target_code);
 
-	queryMappingConceptParams.value.sourceCode = queryParams.value.source_code;
-	queryMappingConceptParams.value.targetCode = queryParams.value.target_code;
-	queryMappingConceptParams.value.limit = 100000;
-	queryMappingConceptParams.value.offset = 0;
-	initMappingConceptList(queryMappingConceptParams);
+  var resInfo = await mappingInfo(queryParams);
+  var dataInfo = resInfo.data;
+  mappingResInfo.value = dataInfo;
+
+  var properties = JSON.parse(dataInfo.properties);
+  fieldList.value = properties;
+  selectFields.value = properties.filter((p: any) => p.compare == true).map((p: any) => p.code);
+
+  await initMapConcepts(sourceCode.value, targetCode.value);
+
+  queryMappingConceptParams.value.sourceCode = queryParams.value.source_code;
+  queryMappingConceptParams.value.targetCode = queryParams.value.target_code;
+  queryMappingConceptParams.value.limit = 100000;
+  queryMappingConceptParams.value.offset = 0;
+
+  await initMappingConceptList();
 });
 
 /**初始化源字典和目标字典的数据**/
 const initMapConcepts = async (sourcode: string, targetCode: string) => {
-	var query = ref<any>({ code: sourcode, limit: 10000, offset: 0 });
-	var sRes = await mapValueList(query);
-	lisValueList.value = sRes.data;
+  var query = ref<any>({code: sourcode, limit: 10000, offset: 0});
+  var sRes = await mapValueList(query);
+  lisValueList.value = sRes.data;
 
-	query.value.code = targetCode;
-	var res = await mapValueList(query);
-	carssValueList.value = res.data;
+  query.value.code = targetCode;
+  var res = await mapValueList(query);
+  carssValueList.value = res.data;
 };
 
 /**设置表头背景颜色 */
 const setTitle = (row: any) => {
-	var len = row.row.length;
-	if (row.columnIndex == 0 && len == 3) {
-		return { background: '#004d8c', color: '#FFFFFF' };
-	}
-	if (row.columnIndex == 1 && len == 3) {
-		return { background: '#fc5531', color: '#FFFFFF' };
-	}
+  var len = row.row.length;
+  if (row.columnIndex == 0 && len == 3) {
+    return {background: '#004d8c', color: '#FFFFFF'};
+  }
+  if (row.columnIndex == 1 && len == 3) {
+    return {background: '#fc5531', color: '#FFFFFF'};
+  }
 
-	if (row.columnIndex == 2 && len == 3) {
-		return { background: '#fc5531', color: '#FFFFFF' };
-	}
+  if (row.columnIndex == 2 && len == 3) {
+    return {background: '#fc5531', color: '#FFFFFF'};
+  }
 
-	var columnCount = fieldList.value.length;
-	if (row.columnIndex < columnCount && len == columnCount * 2) {
-		return { background: '#004d8c', color: '#FFFFFF' };
-	}
-	if (row.columnIndex >= columnCount && len == columnCount * 2) {
-		return { background: '#fc5531', color: '#FFFFFF' };
-	}
+  var columnCount = fieldList.value.length;
+  if (row.columnIndex < columnCount && len == columnCount * 2) {
+    return {background: '#004d8c', color: '#FFFFFF'};
+  }
+  if (row.columnIndex >= columnCount && len == columnCount * 2) {
+    return {background: '#fc5531', color: '#FFFFFF'};
+  }
 };
 
 const getHeadLabel = (index: any) => {
-	if (index > fieldList.value.length - 1) {
-		return '';
-	} else {
-		return fieldList.value[index].code;
-	}
+  if (index > fieldList.value.length - 1) {
+    return '';
+  } else {
+    return fieldList.value[index].code;
+  }
 };
 
 const showColumn = (index: any) => {
-	if (index > fieldList.value.length - 1) {
-		return false;
-	} else {
-		return true;
-	}
+  if (index > fieldList.value.length - 1) {
+    return false;
+  } else {
+    return true;
+  }
 };
+
+class Concept {
+  source_code: string = '';
+  target_code: string = '';
+  source_attr_1: string = '';
+  source_attr_2: string = '';
+  source_attr_3: string = '';
+  source_attr_4: string = '';
+  source_attr_5: string = '';
+  source_attr_6: string = '';
+  target_attr_1: string = '';
+  target_attr_2: string = '';
+  target_attr_3: string = '';
+  target_attr_4: string = '';
+  target_attr_5: string = '';
+  target_attr_6: string = '';
+
+  constructor(
+      source_code: string,
+      target_code: string,
+      source_attr_1: string,
+      source_attr_2: string,
+      source_attr_3: string,
+      source_attr_4: string,
+      source_attr_5: string,
+      source_attr_6: string,
+      target_attr_1: string,
+      target_attr_2: string,
+      target_attr_3: string,
+      target_attr_4: string,
+      target_attr_5: string,
+      target_attr_6: string
+  ) {
+    this.source_code = source_code || '';
+    this.target_code = target_code || '';
+    this.source_attr_1 = source_attr_1 || '';
+    this.source_attr_2 = source_attr_2 || '';
+    this.source_attr_3 = source_attr_3 || '';
+    this.source_attr_4 = source_attr_4 || '';
+    this.source_attr_5 = source_attr_5 || '';
+    this.source_attr_6 = source_attr_6 || '';
+    this.target_attr_1 = target_attr_1 || '';
+    this.target_attr_2 = target_attr_2 || '';
+    this.target_attr_3 = target_attr_3 || '';
+    this.target_attr_4 = target_attr_4 || '';
+    this.target_attr_5 = target_attr_5 || '';
+    this.target_attr_6 = target_attr_6 || '';
+  }
+
+  getUMConceptByMap = (): Concept => {
+    return new Concept(
+        this.source_code,
+        this.target_code,
+        this.source_attr_1 || '',
+        this.source_attr_2 || '',
+        this.source_attr_3 || '',
+        this.source_attr_4 || '',
+        this.source_attr_5 || '',
+        this.source_attr_6 || '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+    );
+  };
+}
+
+const getUMConceptByMap = (source_code: string, target_code: string, data: any): Concept => {
+  return new Concept(
+      source_code,
+      target_code,
+      data.attr_1 || '',
+      data.attr_2 || '',
+      data.attr_3 || '',
+      data.attr_4 || '',
+      data.attr_5 || '',
+      data.attr_6 || '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+  );
+};
+
+
+class MapConcept {
+  code: string = '';
+  attr_1: string = '';
+  attr_2: string = '';
+  attr_3: string = '';
+  attr_4: string = '';
+  attr_5: string = '';
+  attr_6: string = '';
+
+  constructor(code: string, attr_1: string, attr_2: string, attr_3: string, attr_4: string, attr_5: string, attr_6: string) {
+    this.code = code;
+    this.attr_1 = attr_1 || '';
+    this.attr_2 = attr_2 || '';
+    this.attr_3 = attr_3 || '';
+    this.attr_4 = attr_4 || '';
+    this.attr_5 = attr_5 || '';
+    this.attr_6 = attr_6 || '';
+  }
+
+  getMappingConcept = (source_code: string, target_code: string): Concept => {
+    return new Concept(
+        source_code,
+        target_code,
+        this.attr_1 || '',
+        this.attr_2 || '',
+        this.attr_3 || '',
+        this.attr_4 || '',
+        this.attr_5 || '',
+        this.attr_6 || '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+    );
+  }
+
+  // equalTo = (c: Concept): boolean => {
+  //     if()
+  // }
+}
+
 </script>
 
 <style scoped lang="scss">
 .system-role-container {
-	.system-role-padding {
-		padding: 15px;
-		.el-table {
-			flex: 1;
-		}
-	}
+  .system-role-padding {
+    padding: 15px;
+
+    .el-table {
+      flex: 1;
+    }
+  }
 }
 
 .el-select {
-	width: 220px;
-	height: 32px;
-	.el-input__inner {
-		height: 32px;
-	}
+  width: 220px;
+  height: 32px;
 
-	.el-input__prefix,
-	.el-input__suffix {
-		height: 32px;
-	}
+  .el-input__inner {
+    height: 32px;
+  }
 
-	/* 下面设置右侧按钮居中 */
-	.el-input__suffix {
-		top: 0px;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		flex-wrap: nowrap;
-		flex-direction: row;
-		align-content: flex-start;
-	}
-	/* 输入框加上上下边是 32px + 2px =34px */
-	.el-input__icon {
-		line-height: 32px;
-	}
+  .el-input__prefix,
+  .el-input__suffix {
+    height: 32px;
+  }
+
+  /* 下面设置右侧按钮居中 */
+  .el-input__suffix {
+    top: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-content: flex-start;
+  }
+
+  /* 输入框加上上下边是 32px + 2px =34px */
+  .el-input__icon {
+    line-height: 32px;
+  }
 }
 </style>
