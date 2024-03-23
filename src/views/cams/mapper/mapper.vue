@@ -185,6 +185,7 @@ const mappingResInfo = ref<any>({});
 
 // 初始化数据
 const initData = async () => {
+	loading.value = true;
 	var resInfo = await mappingInfo(queryParams);
 	var dataInfo = resInfo.data;
 	mappingResInfo.value = dataInfo;
@@ -202,6 +203,9 @@ const initData = async () => {
 	queryMappingConceptParams.value.offset = 0;
 	initMappingConceptList(queryMappingConceptParams);
 	getMappingValueList();
+	setTimeout(() => {
+		loading.value = false;
+	}, 500);
 };
 
 //初始化已映射数据

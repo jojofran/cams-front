@@ -95,64 +95,66 @@
 						</el-icon>
 						新增
 					</el-button>
-					<!-- <el-button type="primary" @click="onSaveData()">
-						<el-icon>
-							<ele-Edit />
-						</el-icon>
-						保  存
-					</el-button> -->
 				</template>
+			
 			</el-descriptions>
 			<el-table :data="tableData" v-loading="loading" style="width: 100%;">
     			<el-table-column type="index" label="序号" width="60" />
-   				<el-table-column prop="antibiotic_code" label="药物代码" width="100">
-					<template #default="scope" >
-						<el-input v-if="scope.row.showInput" v-model="scope.row.antibiotic_code" placeholder="请输入药物代码" clearable></el-input>
+				<!-- <el-table-column prop="antibiotic_code" label="药物代码" width="100">
+					<template #default="scope">
+						<el-input v-model="scope.row.antibiotic_code" placeholder="请输入药物代码" clearable></el-input>
 					</template>
 				</el-table-column>
-    			<el-table-column prop="antibiotic_cn_name" label="药物中文名称" width="150">
-					<template #default="scope" >
-						<el-input v-if="scope.row.showInput" v-model="scope.row.antibiotic_cn_name" placeholder="请输入药物中文名称" clearable></el-input>
+				<el-table-column prop="antibiotic_cn_name" label="药物中文名称" width="200">
+					<template #default="scope">
+						<el-input v-model="scope.row.antibiotic_cn_name" placeholder="请输入药物代码" clearable></el-input>
 					</template>
 				</el-table-column>
-    			<el-table-column prop="method" label="药敏方法" width="150">
-					<template #default="scope" >
-						<el-input v-if="scope.row.showInput" v-model="scope.row.method" placeholder="请输入药敏方法" clearable></el-input>
+				<el-table-column prop="method" label="药敏方法" width="200">
+					<template #default="scope">
+						<el-input v-model="scope.row.method" placeholder="请输入药物代码" clearable></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="field_code" label="药敏字段代码" width="200">
 					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.field_code" placeholder="请输入药物代码" clearable></el-input>
+						<el-input v-model="scope.row.field_code" placeholder="请输入药物代码" clearable></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="test_value" label="药敏结果值" width="auto">
 					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.test_value" placeholder="请输入药物代码" clearable></el-input>
+						<el-input v-model="scope.row.test_value" placeholder="请输入药物代码" clearable></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="test_result" label="药敏判定结果" width="auto">
 					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.test_result" placeholder="请输入药物代码" clearable></el-input>
+						<el-input v-model="scope.row.test_result" placeholder="请输入药物代码" clearable></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="instrument" label="药敏仪器名称" width="100">
 					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.instrument" placeholder="请输入药物代码" clearable></el-input>
+						<el-input v-model="scope.row.instrument" placeholder="请输入药物代码" clearable></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="card_mode" label="板卡型号" width="100">
 					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.card_mode" placeholder="请输入药物代码" clearable></el-input>
+						<el-input v-model="scope.row.card_mode" placeholder="请输入药物代码" clearable></el-input>
 					</template>
-				</el-table-column>
+				</el-table-column> -->
+   				<el-table-column prop="antibiotic_code" label="药物代码" width="100"></el-table-column>
+    			<el-table-column prop="antibiotic_cn_name" label="药物中文名称" width="150"></el-table-column>
+    			<el-table-column prop="method" label="药敏方法" width="150"></el-table-column>
+    			<el-table-column prop="field_code" label="药敏字段代码" width="auto"></el-table-column>
+    			<el-table-column prop="test_value" label="药敏结果值" width="auto"></el-table-column>
+    			<el-table-column prop="test_result" label="药敏判定结果" width="auto"></el-table-column>
+    			<el-table-column prop="instrument" label="药敏仪器名称" width="150"></el-table-column>
+    			<el-table-column prop="card_mode" label="板卡型号" width="100"></el-table-column>
     			<el-table-column label="操作" width="200" align="center" fixed="right" show-overflow-tooltip="">
-					<template #default="scope">
-						<el-button size="small" v-if="!scope.row.showInput" icon="ele-Edit" type="warning" @click="onOpenEdit(scope.row)">修改</el-button>
-						<el-button size="small" v-if="scope.row.showInput" icon="ele-CircleCheck" type="primary" @click="onSaveData(scope.row)">保存</el-button>
-						<el-button size="small" icon="ele-Delete" type="danger" @click="onRowDel(scope.row)">删除</el-button>
-					</template>
-				</el-table-column>
-			</el-table>
+        <template #default="scope">
+            <el-button size="small" text type="primary" @click="onOpenEdit(scope.row)">修改</el-button>
+            <el-button size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
+        </template>
+    </el-table-column>
+</el-table>
 
 			<el-pagination
 				@size-change="onHandleSizeChange"
@@ -211,7 +213,6 @@ const initData = async () => {
 		data[i].specimen_collection_date = utcToLocalTime(data[i].specimen_collection_date);
 		data[i].specimen_checkin_date = utcToLocalTime(data[i].specimen_checkin_date);
 		data[i].report_date = utcToLocalTime(data[i].report_date);
-		data[i].showInput = false;
 	}
 	ruleForm.value = res.data[0];
 	getTableData();
@@ -234,48 +235,16 @@ const getTableData = async () => {
 
 // 打开修改弹窗
 const onOpenEdit = (row: any) => {
-	row.showInput = true;
+	dialogTitle.value = '修改数据';
+	dialogRef.value.openDialog(row);
 };
 
-// // 打开新增弹窗
-// const onOpenAdd = () => {
-// 	tableData.value.push({showInput:true});
-// };
-
-// 保存数据
-const onSaveData = (row: any) => {
-	delete row['showInput'];
-	var model = {
-			adds:[row],
-			deletes:[row.id]
-		};
-	modifyResult(model);
-	ElMessage.success('保存成功');
-	row.showInput = false;
-};
-
-
-// // 打开修改弹窗
-// const onOpenEdit = (row: any) => {
-// 	dialogTitle.value = '修改数据';
-// 	dialogRef.value.openDialog(row);
-// };
 
 // 打开新增弹窗
 const onOpenAdd = () => {
 	dialogTitle.value = '新增数据';
 	dialogRef.value.openDialog();
 };
-
-//保存数据
-// const onSaveData = () => {
-	
-// };
-
-// // 打开新增弹窗
-// const onOpenAdd = () => {
-// 	tableData.value.push({});
-// };
 
 // 删除
 const onRowDel = (row: any) => {
@@ -320,7 +289,6 @@ const onHandleCurrentChange = (val: number) => {
 onMounted(() => {
 	initData();
 });
-
 </script>
 
 <style scoped lang="scss">
@@ -332,4 +300,5 @@ onMounted(() => {
 		}
 	}
 }
+
 </style>
