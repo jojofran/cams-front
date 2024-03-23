@@ -91,16 +91,14 @@
               :data="tableData_fail"
               v-loading="uPageParams.loading"
               v-el-table-infinite-scroll="loadMoreUnMapping"
-              infinite-scroll-delay="20"
-              infinite-scroll-immediate="false"
               stripe
               style="width: 100%"
               height="500"
               :header-cell-style="setTitle"
           >
+            <el-table-column prop="source_code" width="auto" v-if="false"/>
+            <el-table-column prop="target_code" width="auto" v-if="false"/>
             <el-table-column :label="sourceMapName" align="center">
-              <el-table-column prop="source_code" width="auto" v-if="false"/>
-              <el-table-column prop="target_code" width="auto" v-if="false"/>
               <el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
                 <template #default="scope">
                   <span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
