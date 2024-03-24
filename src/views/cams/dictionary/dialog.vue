@@ -140,6 +140,17 @@ const onOpenEdit = (row: any) => {
 	dialogRef.value.openDialog(tableheHead,ruleForm.value.code,row);
 };
 
+// 分页改变
+const onHandleSizeChange = (val: number) => {
+	tableParams.value.pageSize = val;
+	getTableData();
+};
+// 分页改变
+const onHandleCurrentChange = (val: number) => {
+	tableParams.value.page = val;
+	getTableData();
+};
+
 // 删除
 const onRowDel = (row: any) => {
 	ElMessageBox.confirm(`此操作将永久删除字典值，是否继续?`, '提示', {

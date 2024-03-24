@@ -109,7 +109,7 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 const submitUpload = () => {
 //   var type = 'lis_dic';
   ruleForm.value.code = sysDicSelectValue.value + '_'+ sysVendorSelectValue.value;
-  actionStr.value = 'http://192.168.1.7:5500/api/excel/import/'+ dictype.value + '/' + ruleForm.value.code;// + '/' + ruleForm.value.name;
+  actionStr.value = 'http://127.0.0.1:5500/api/excel/import/'+ dictype.value + '/' + ruleForm.value.code;// + '/' + ruleForm.value.name;
 
   upload.value!.submit()
 }

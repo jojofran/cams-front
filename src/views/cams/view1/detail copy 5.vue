@@ -95,64 +95,50 @@
 						</el-icon>
 						新增
 					</el-button>
-					<!-- <el-button type="primary" @click="onSaveData()">
-						<el-icon>
-							<ele-Edit />
-						</el-icon>
-						保  存
-					</el-button> -->
 				</template>
+			
 			</el-descriptions>
-			<el-table :data="tableData" v-loading="loading" style="width: 100%;">
+			<!-- <el-auto-resizer>
+				<template #default="{ height, width }">
+					<el-table-v2
+					:columns="columns"
+					:data="data"
+					:width="width"
+					:height="height"
+					fixed
+					/>
+				</template>
+			</el-auto-resizer> -->
+			<div style="height: 400px">
+				<el-auto-resizer>
+				<template #default="{ height, width }">
+					<el-table-v2
+					:columns="columns"
+					:data="data"
+					:width="width"
+					:height="height"
+					fixed
+					/>
+				</template>
+				</el-auto-resizer>
+			</div>
+			<!-- <el-table :data="tableData" v-loading="loading" style="width: 100%;">
     			<el-table-column type="index" label="序号" width="60" />
-   				<el-table-column prop="antibiotic_code" label="药物代码" width="100">
-					<template #default="scope" >
-						<el-input v-if="scope.row.showInput" v-model="scope.row.antibiotic_code" placeholder="请输入药物代码" clearable></el-input>
-					</template>
-				</el-table-column>
-    			<el-table-column prop="antibiotic_cn_name" label="药物中文名称" width="150">
-					<template #default="scope" >
-						<el-input v-if="scope.row.showInput" v-model="scope.row.antibiotic_cn_name" placeholder="请输入药物中文名称" clearable></el-input>
-					</template>
-				</el-table-column>
-    			<el-table-column prop="method" label="药敏方法" width="150">
-					<template #default="scope" >
-						<el-input v-if="scope.row.showInput" v-model="scope.row.method" placeholder="请输入药敏方法" clearable></el-input>
-					</template>
-				</el-table-column>
-				<el-table-column prop="field_code" label="药敏字段代码" width="200">
-					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.field_code" placeholder="请输入药物代码" clearable></el-input>
-					</template>
-				</el-table-column>
-				<el-table-column prop="test_value" label="药敏结果值" width="auto">
-					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.test_value" placeholder="请输入药物代码" clearable></el-input>
-					</template>
-				</el-table-column>
-				<el-table-column prop="test_result" label="药敏判定结果" width="auto">
-					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.test_result" placeholder="请输入药物代码" clearable></el-input>
-					</template>
-				</el-table-column>
-				<el-table-column prop="instrument" label="药敏仪器名称" width="100">
-					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.instrument" placeholder="请输入药物代码" clearable></el-input>
-					</template>
-				</el-table-column>
-				<el-table-column prop="card_mode" label="板卡型号" width="100">
-					<template #default="scope">
-						<el-input v-if="scope.row.showInput" v-model="scope.row.card_mode" placeholder="请输入药物代码" clearable></el-input>
-					</template>
-				</el-table-column>
+   				<el-table-column prop="antibiotic_code" label="药物代码" width="100"></el-table-column>
+    			<el-table-column prop="antibiotic_cn_name" label="药物中文名称" width="150"></el-table-column>
+    			<el-table-column prop="method" label="药敏方法" width="150"></el-table-column>
+    			<el-table-column prop="field_code" label="药敏字段代码" width="auto"></el-table-column>
+    			<el-table-column prop="test_value" label="药敏结果值" width="auto"></el-table-column>
+    			<el-table-column prop="test_result" label="药敏判定结果" width="auto"></el-table-column>
+    			<el-table-column prop="instrument" label="药敏仪器名称" width="150"></el-table-column>
+    			<el-table-column prop="card_mode" label="板卡型号" width="100"></el-table-column>
     			<el-table-column label="操作" width="200" align="center" fixed="right" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-button size="small" v-if="!scope.row.showInput" icon="ele-Edit" type="warning" @click="onOpenEdit(scope.row)">修改</el-button>
-						<el-button size="small" v-if="scope.row.showInput" icon="ele-CircleCheck" type="primary" @click="onSaveData(scope.row)">保存</el-button>
-						<el-button size="small" icon="ele-Delete" type="danger" @click="onRowDel(scope.row)">删除</el-button>
+						<el-button size="small" text type="primary" @click="onOpenEdit(scope.row)">修改</el-button>
+						<el-button size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
-			</el-table>
+			</el-table> -->
 
 			<el-pagination
 				@size-change="onHandleSizeChange"
@@ -172,7 +158,7 @@
 	</div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -211,7 +197,6 @@ const initData = async () => {
 		data[i].specimen_collection_date = utcToLocalTime(data[i].specimen_collection_date);
 		data[i].specimen_checkin_date = utcToLocalTime(data[i].specimen_checkin_date);
 		data[i].report_date = utcToLocalTime(data[i].report_date);
-		data[i].showInput = false;
 	}
 	ruleForm.value = res.data[0];
 	getTableData();
@@ -234,48 +219,16 @@ const getTableData = async () => {
 
 // 打开修改弹窗
 const onOpenEdit = (row: any) => {
-	row.showInput = true;
+	dialogTitle.value = '修改数据';
+	dialogRef.value.openDialog(row);
 };
 
-// // 打开新增弹窗
-// const onOpenAdd = () => {
-// 	tableData.value.push({showInput:true});
-// };
-
-// 保存数据
-const onSaveData = (row: any) => {
-	delete row['showInput'];
-	var model = {
-			adds:[row],
-			deletes:[row.id]
-		};
-	modifyResult(model);
-	ElMessage.success('保存成功');
-	row.showInput = false;
-};
-
-
-// // 打开修改弹窗
-// const onOpenEdit = (row: any) => {
-// 	dialogTitle.value = '修改数据';
-// 	dialogRef.value.openDialog(row);
-// };
 
 // 打开新增弹窗
 const onOpenAdd = () => {
 	dialogTitle.value = '新增数据';
 	dialogRef.value.openDialog();
 };
-
-//保存数据
-// const onSaveData = () => {
-	
-// };
-
-// // 打开新增弹窗
-// const onOpenAdd = () => {
-// 	tableData.value.push({});
-// };
 
 // 删除
 const onRowDel = (row: any) => {
@@ -321,6 +274,94 @@ onMounted(() => {
 	initData();
 });
 
+import { ElInput } from 'element-plus';
+import type { FunctionalComponent } from 'vue';
+import type { Column, InputInstance } from 'element-plus';
+
+type SelectionCellProps = {
+  value: string
+  intermediate?: boolean
+  onChange: (value: string) => void
+  forwardRef: (el: InputInstance) => void
+}
+
+const InputCell: FunctionalComponent<SelectionCellProps> = ({
+  value,
+  onChange,
+  forwardRef,
+}) => {
+  return (
+    <ElInput ref={forwardRef as any} onInput={onChange} modelValue={value} />
+  )
+}
+
+const generateColumns = (length = 10, prefix = 'column-', props?: any) =>
+  Array.from({ length }).map((_, columnIndex) => ({
+    ...props,
+    key: `${prefix}${columnIndex}`,
+    dataKey: `${prefix}${columnIndex}`,
+    title: `Column ${columnIndex}`,
+    width: 150,
+  }))
+
+const generateData = (
+  columns: ReturnType<typeof generateColumns>,
+  length = 200,
+  prefix = 'row-'
+) =>
+  Array.from({ length }).map((_, rowIndex) => {
+    return columns.reduce(
+      (rowData, column, columnIndex) => {
+        rowData[column.dataKey] = `Row ${rowIndex} - Col ${columnIndex}`
+        return rowData
+      },
+      {
+        id: `${prefix}${rowIndex}`,
+        editing: false,
+        parentId: null,
+      }
+    )
+})
+
+const columns: Column<any>[] = generateColumns(10)
+columns[0] = {
+  ...columns[0],
+  title: 'Editable Column',
+  cellRenderer: ({ rowData, column }) => {
+    const onChange = (value: string) => {
+      rowData[column.dataKey!] = value
+    }
+    const onEnterEditMode = () => {
+      rowData.editing = true
+    }
+
+    const onExitEditMode = () => (rowData.editing = false)
+    const input = ref()
+    const setRef = (el) => {
+      input.value = el
+      if (el) {
+        el.focus?.()
+      }
+    }
+
+    return rowData.editing ? (
+      <InputCell
+        forwardRef={setRef}
+        value={rowData[column.dataKey!]}
+        onChange={onChange}
+        onBlur={onExitEditMode}
+        onKeydownEnter={onExitEditMode}
+      />
+    ) : (
+      <div class="table-v2-inline-editing-trigger" onClick={onEnterEditMode}>
+        {rowData[column.dataKey!]}
+      </div>
+    )
+  },
+}
+
+const data = ref(generateData(columns, 200))
+
 </script>
 
 <style scoped lang="scss">
@@ -332,4 +373,14 @@ onMounted(() => {
 		}
 	}
 }
+
+.table-v2-inline-editing-trigger {
+  border: 1px transparent dotted;
+  padding: 4px;
+}
+
+.table-v2-inline-editing-trigger:hover {
+  border-color: var(--el-color-primary);
+}
+
 </style>
