@@ -2,11 +2,11 @@
   <div>
     <el-card shadow="hover" class="box-card" style="margin-top: 0; height: 100%; width: 100%">
       <div class="system-user-search mb15">
-        <label>Lis字典：</label>
-        <el-input v-model="sourceMapName" size="default" disabled style="max-width: 180px"></el-input>
-        <label>Carss字典：</label>
-        <el-input v-model="targetMapName" size="default" disabled style="max-width: 180px"></el-input>
-        <label>匹配字段：</label>
+        <label >Lis字典：</label>
+        <el-input v-model="sourceMapName" size="default" disabled style="max-width: 170px"></el-input>
+        <label style="margin-left: 10px">Carss字典：</label>
+        <el-input v-model="targetMapName" size="default" disabled style="max-width: 170px"></el-input>
+        <label style="margin-left: 10px">匹配字段：</label>
         <el-select
             v-model="selectFields"
             multiple
@@ -44,13 +44,14 @@
               :data="tableData_success"
               v-loading="pageParams.loading"
               v-el-table-infinite-scroll="loadMoreMapping"
+              scrollbar-always-on="true"
               infinite-scroll-delay="20"
               infinite-scroll-immediate="false"
               style="width: 100%"
-              height="500"
+              height="650"
               stripe
               :header-cell-style="setTitle"
-              scrollbar-always-on="true"
+
           >
             <el-table-column type="index" width="50"/>
             <el-table-column prop="source_code" width="auto" v-if="false"/>
