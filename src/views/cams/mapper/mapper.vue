@@ -44,20 +44,23 @@
               :data="tableData_success"
               v-loading="pageParams.loading"
               v-el-table-infinite-scroll="loadMoreMapping"
+              infinite-scroll-delay="20"
+              infinite-scroll-immediate="false"
               style="width: 100%"
               height="500"
               stripe
               :header-cell-style="setTitle"
+              scrollbar-always-on="true"
           >
-
+            <el-table-column type="index" width="50"/>
+            <el-table-column prop="source_code" width="auto" v-if="false"/>
+            <el-table-column prop="target_code" width="auto" v-if="false"/>
             <el-table-column :label="sourceMapName" align="center">
               <el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
                 <template #default="scope">
                   <span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="source_code" width="auto" v-if="false"/>
-              <el-table-column prop="target_code" width="auto" v-if="false"/>
               <el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
               <el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
               <el-table-column prop="source_attr_4" :label="getHeadLabel(3)" width="auto" v-if="showColumn(3)"/>
@@ -91,18 +94,19 @@
               :data="tableData_fail"
               v-loading="uPageParams.loading"
               v-el-table-infinite-scroll="loadMoreUnMapping"
+              infinite-scroll-delay="40"
+              infinite-scroll-immediate="false"
               stripe
               style="width: 100%"
               height="500"
               :header-cell-style="setTitle"
+              scrollbar-always-on="true"
           >
+            <el-table-column type="index" width="50"/>
             <el-table-column prop="source_code" width="auto" v-if="false"/>
             <el-table-column prop="target_code" width="auto" v-if="false"/>
             <el-table-column :label="sourceMapName" align="center">
               <el-table-column prop="source_attr_1" :label="getHeadLabel(0)" width="auto" v-if="showColumn(0)">
-                <template #default="scope">
-                  <span style="color: #004d8c">{{ scope.row.source_attr_1 }}</span>
-                </template>
               </el-table-column>
               <el-table-column prop="source_attr_2" :label="getHeadLabel(1)" width="auto" v-if="showColumn(1)"/>
               <el-table-column prop="source_attr_3" :label="getHeadLabel(2)" width="auto" v-if="showColumn(2)"/>
@@ -121,17 +125,11 @@
                       remote
                       @change="(val:any) =>{ handleSelectChange(val, scope.row); }"
                       :loading="selectLoading"
-                      placeholder="请选择CARSS字典值"
+                      :disabled="uPageParams.loading"
                       style="width: 100%; height: 24px; text-align: center"
                   >
-                    <el-option v-for="(item) in targetOptions" :key="item.attr_1" :label="item.attr_1"
-                               :value="item.attr_1">
-                      <span style="float: none; color: #fc5531; font-size: 10px">{{ item.attr_1 || '' }}</span>
-                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_2 || '' }}</span>
-                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_3 || '' }}</span>
-                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_4 || '' }}</span>
-                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_5 || '' }}</span>
-                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.attr_6 || '' }}</span>
+                    <el-option v-for="(item) in targetOptions" :key="item.key" :label="item.key" :value="item.key">
+                      <span style="float: none; color: #fc5531; margin-left: 15px">{{ item.label }}</span>
                     </el-option>
                   </el-select>
                 </template>
@@ -167,7 +165,7 @@
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+import {onMounted, onUnmounted, ref} from 'vue';
 import {ElMessage} from 'element-plus';
 import {useRouter} from 'vue-router';
 import {
@@ -192,6 +190,12 @@ const tableData_fail = ref<any>([]);
 const queryParams = ref<any>({
   properties: [],
 });
+
+const carssValueList = ref<any[]>([]);
+const lisValueList = ref<any[]>([]);
+
+const MappingConcepts = ref<any[]>([]); //Mapping Data in memory
+const UnMappingConcepts = ref<any[]>([]); //UnMapping Data in memory
 
 //查询映射数据列表参数
 const queryMappingConceptParams = ref<any>({});
@@ -246,21 +250,16 @@ const initMappingConceptList = async () => {
   initScrollTable();
 };
 
-const carssValueList = ref<MapConcept[]>([]);
-const lisValueList = ref<MapConcept[]>([]);
-
-const MappingConcepts = ref<Concept[]>([]); //Mapping Data in memory
-const UnMappingConcepts = ref<Concept[]>([]); //UnMapping Data in memory
 
 const uPageParams = ref<any>({
-  pageSize: 10,
+  pageSize: 20,
   currentPage: 1,
   loading: false,
   nomore: false,
 });
 
 const pageParams = ref<any>({
-  pageSize: 10,
+  pageSize: 20,
   currentPage: 1,
   loading: false,
   nomore: false,
@@ -269,7 +268,10 @@ const pageParams = ref<any>({
 /** 未匹配表格滚动事件 */
 const loadMoreUnMapping = () => {
   if (uPageParams.value.nomore == true) {
-    //没有数据
+    ElMessage({
+      message: "没有更多数据",
+      type: "warning",
+    });
     return;
   }
 
@@ -285,7 +287,7 @@ const loadMoreUnMapping = () => {
     let startIndex = (uPageParams.value.currentPage - 1) * uPageParams.value.pageSize;
     let endIndex = uPageParams.value.currentPage * uPageParams.value.pageSize;
     if (endIndex >= UnMappingConcepts.value.length) {
-      endIndex = UnMappingConcepts.value.length - 1;
+      endIndex = UnMappingConcepts.value.length;
     }
 
     tableData_fail.value = tableData_fail.value.concat(UnMappingConcepts.value.slice(startIndex, endIndex));
@@ -296,7 +298,10 @@ const loadMoreUnMapping = () => {
 /** 已匹配表格滚动事件 */
 const loadMoreMapping = () => {
   if (pageParams.value.nomore == true) {
-    //没有数据
+    ElMessage({
+      message: "没有更多数据",
+      type: "warning",
+    });
     return;
   }
 
@@ -310,8 +315,8 @@ const loadMoreMapping = () => {
 
     let startIndex = (pageParams.value.currentPage - 1) * pageParams.value.pageSize;
     let endIndex = pageParams.value.currentPage * pageParams.value.pageSize;
-    if (endIndex >= UnMappingConcepts.value.length) {
-      endIndex = UnMappingConcepts.value.length - 1;
+    if (endIndex >= MappingConcepts.value.length) {
+      endIndex = MappingConcepts.value.length;
     }
 
     tableData_success.value = tableData_success.value.concat(MappingConcepts.value.slice(startIndex, endIndex));
@@ -341,7 +346,7 @@ const refresh = async () => {
   await initMappingConceptList();
 }
 
-const removeRow = (array: Concept[], row: Concept): Concept[] => {
+const removeRow = (array: any[], row: any): any[] => {
 
   var index = array.indexOf(row)
   var left = array.slice(0, index);
@@ -350,7 +355,7 @@ const removeRow = (array: Concept[], row: Concept): Concept[] => {
 }
 
 /**移除已匹配元素 */
-const handleRemove = (row: Concept) => {
+const handleRemove = (row: any) => {
 
   tableData_success.value = removeRow(tableData_success.value, row);
   MappingConcepts.value = removeRow(MappingConcepts.value, row);
@@ -360,7 +365,7 @@ const handleRemove = (row: Concept) => {
 };
 
 /**清除选择 */
-const handleClear = (row: Concept) => {
+const handleClear = (row: any) => {
   row.target_attr_1 = '';
   row.target_attr_2 = '';
 
@@ -379,7 +384,7 @@ const handleClear = (row: Concept) => {
 };
 
 /**暂存为已匹配 */
-const handlerAdd = (row: Concept) => {
+const handlerAdd = (row: any) => {
 
   if (row.source_code == '' || row.target_code == '' || row.target_attr_1 == '') {
     return;
@@ -395,12 +400,12 @@ const handlerAdd = (row: Concept) => {
 /** 初始化滚动表格 */
 const initScrollTable = () => {
   pageParams.value.currentPage = 0;
-  pageParams.value.pageSize = 10;
+  pageParams.value.pageSize = 20;
   pageParams.value.loading = true;
   pageParams.value.nomore = false;
 
   uPageParams.value.currentPage = 0;
-  uPageParams.value.pageSize = 10;
+  uPageParams.value.pageSize = 20;
   uPageParams.value.loading = true;
   uPageParams.value.nomore = false;
 
@@ -422,6 +427,7 @@ const initMemoryData = () => {
   tableData_fail.value = [];
   UnMappingConcepts.value = [];
   MappingConcepts.value = [];
+
 }
 
 //覆盖数据
@@ -483,10 +489,11 @@ const handleSelectChange = (val: any, row: any) => {
 /**查询目标字典项 */
 const queryTargetOptions = (query: string) => {
   if (query) {
+
     selectLoading.value = true;
     targetOptions.value = [];
+
     setTimeout(() => {
-      selectLoading.value = false;
       for (var i = 0; i < carssValueList.value.length; i++) {
         let r = carssValueList.value[i];
         if (
@@ -497,10 +504,21 @@ const queryTargetOptions = (query: string) => {
             (r.attr_5 && r.attr_5.includes(query)) ||
             (r.attr_6 && r.attr_6.includes(query))
         ) {
-          targetOptions.value.push(carssValueList.value[i]);
+
+          let key: string = (r.attr_1 || '');
+          let label: string = (r.attr_1 || '') + "   " + (r.attr_2 || '') + "  " + (r.attr_3 || '') + "&nbsp" + (r.attr_4 || '') + "   " + (r.attr_5 || '') + "   " + (r.attr_6 || '');
+          let obj = {
+            key: key,
+            value: key,
+            label: label
+          }
+          targetOptions.value.push(obj);
         }
       }
+
+      selectLoading.value = false;
     }, 1000);
+
   } else {
     targetOptions.value = [];
   }
@@ -542,6 +560,20 @@ onMounted(async () => {
   await initMappingConceptList();
 });
 
+//页面卸载时，清理const变量
+onUnmounted(async () => {
+  tableData_fail.value = null
+  tableData_success.value = null
+  MappingConcepts.value = null
+  UnMappingConcepts.value = null
+  targetOptions.value = null
+  carssValueList.value = null
+  lisValueList.value = null
+  fieldList.value = null
+
+});
+
+
 /**初始化源字典和目标字典的数据**/
 const initMapConcepts = async (sourcode: string, targetCode: string) => {
   var query = ref<any>({code: sourcode, limit: 10000, offset: 0});
@@ -556,14 +588,19 @@ const initMapConcepts = async (sourcode: string, targetCode: string) => {
 /**设置表头背景颜色 */
 const setTitle = (row: any) => {
   var len = row.row.length;
-  if (row.columnIndex == 0 && len == 3) {
+
+  if (row.columnIndex == 0 && len == 4) {
     return {background: '#004d8c', color: '#FFFFFF'};
   }
-  if (row.columnIndex == 1 && len == 3) {
+
+  if (row.columnIndex == 1 && len == 4) {
+    return {background: '#004d8c', color: '#FFFFFF'};
+  }
+  if (row.columnIndex == 2 && len == 4) {
     return {background: '#fc5531', color: '#FFFFFF'};
   }
 
-  if (row.columnIndex == 2 && len == 3) {
+  if (row.columnIndex == 3 && len == 4) {
     return {background: '#fc5531', color: '#FFFFFF'};
   }
 
@@ -592,136 +629,29 @@ const showColumn = (index: any) => {
   }
 };
 
-class Concept {
-  source_code: string = '';
-  target_code: string = '';
-  source_attr_1: string = '';
-  source_attr_2: string = '';
-  source_attr_3: string = '';
-  source_attr_4: string = '';
-  source_attr_5: string = '';
-  source_attr_6: string = '';
-  target_attr_1: string = '';
-  target_attr_2: string = '';
-  target_attr_3: string = '';
-  target_attr_4: string = '';
-  target_attr_5: string = '';
-  target_attr_6: string = '';
 
-  constructor(
-      source_code: string,
-      target_code: string,
-      source_attr_1: string,
-      source_attr_2: string,
-      source_attr_3: string,
-      source_attr_4: string,
-      source_attr_5: string,
-      source_attr_6: string,
-      target_attr_1: string,
-      target_attr_2: string,
-      target_attr_3: string,
-      target_attr_4: string,
-      target_attr_5: string,
-      target_attr_6: string
-  ) {
-    this.source_code = source_code || '';
-    this.target_code = target_code || '';
-    this.source_attr_1 = source_attr_1 || '';
-    this.source_attr_2 = source_attr_2 || '';
-    this.source_attr_3 = source_attr_3 || '';
-    this.source_attr_4 = source_attr_4 || '';
-    this.source_attr_5 = source_attr_5 || '';
-    this.source_attr_6 = source_attr_6 || '';
-    this.target_attr_1 = target_attr_1 || '';
-    this.target_attr_2 = target_attr_2 || '';
-    this.target_attr_3 = target_attr_3 || '';
-    this.target_attr_4 = target_attr_4 || '';
-    this.target_attr_5 = target_attr_5 || '';
-    this.target_attr_6 = target_attr_6 || '';
-  }
+const getUMConceptByMap = (sourceCode: string, targetCode: string, data: any): any => {
+  var obj =
+      {
+        source_code: sourceCode,
+        target_code: targetCode,
+        source_attr_1: data.attr_1 || '',
+        source_attr_2: data.attr_2 || '',
+        source_attr_3: data.attr_3 || '',
+        source_attr_4: data.attr_4 || '',
+        source_attr_5: data.attr_5 || '',
+        source_attr_6: data.attr_6 || '',
+        target_attr_1: '',
+        target_attr_2: '',
+        target_attr_3: '',
+        target_attr_4: '',
+        target_attr_5: '',
+        target_attr_6: '',
+      }
 
-  getUMConceptByMap = (): Concept => {
-    return new Concept(
-        this.source_code,
-        this.target_code,
-        this.source_attr_1 || '',
-        this.source_attr_2 || '',
-        this.source_attr_3 || '',
-        this.source_attr_4 || '',
-        this.source_attr_5 || '',
-        this.source_attr_6 || '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        ''
-    );
-  };
-}
-
-const getUMConceptByMap = (source_code: string, target_code: string, data: any): Concept => {
-  return new Concept(
-      source_code,
-      target_code,
-      data.attr_1 || '',
-      data.attr_2 || '',
-      data.attr_3 || '',
-      data.attr_4 || '',
-      data.attr_5 || '',
-      data.attr_6 || '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      ''
-  );
+  return obj
 };
 
-
-class MapConcept {
-  code: string = '';
-  attr_1: string = '';
-  attr_2: string = '';
-  attr_3: string = '';
-  attr_4: string = '';
-  attr_5: string = '';
-  attr_6: string = '';
-
-  constructor(code: string, attr_1: string, attr_2: string, attr_3: string, attr_4: string, attr_5: string, attr_6: string) {
-    this.code = code;
-    this.attr_1 = attr_1 || '';
-    this.attr_2 = attr_2 || '';
-    this.attr_3 = attr_3 || '';
-    this.attr_4 = attr_4 || '';
-    this.attr_5 = attr_5 || '';
-    this.attr_6 = attr_6 || '';
-  }
-
-  getMappingConcept = (source_code: string, target_code: string): Concept => {
-    return new Concept(
-        source_code,
-        target_code,
-        this.attr_1 || '',
-        this.attr_2 || '',
-        this.attr_3 || '',
-        this.attr_4 || '',
-        this.attr_5 || '',
-        this.attr_6 || '',
-        '',
-        '',
-        '',
-        '',
-        '',
-        ''
-    );
-  }
-
-  // equalTo = (c: Concept): boolean => {
-  //     if()
-  // }
-}
 
 </script>
 
