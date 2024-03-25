@@ -244,6 +244,38 @@ const onOpenEdit = (row: any) => {
 
 // 保存数据
 const onSaveData = (row: any) => {
+	if(row.antibiotic_code==''){
+		ElMessage.error('药物代码不能为空');
+		return;
+	}
+	if(row.antibiotic_cn_name==''){
+		ElMessage.error('药物中文名称不能为空');
+		return;
+	}
+	if(row.method==''){
+		ElMessage.error('药敏方法不能为空');
+		return;
+	}
+	if(row.field_code==''){
+		ElMessage.error('药药敏字段代码不能为空');
+		return;
+	}
+	if(row.test_value==''){
+		ElMessage.error('药敏结果值不能为空');
+		return;
+	}
+	if(row.test_result==''){
+		ElMessage.error('药敏判定结果不能为空');
+		return;
+	}
+	if(row.instrument==''){
+		ElMessage.error('药敏仪器名称不能为空');
+		return;
+	}
+	if(row.card_mode==''){
+		ElMessage.error('板卡型号不能为空');
+		return;
+	}
 	delete row['showInput'];
 	var model = {
 			adds:[row],
@@ -253,8 +285,6 @@ const onSaveData = (row: any) => {
 	ElMessage.success('保存成功');
 	row.showInput = false;
 };
-
-
 // // 打开修改弹窗
 // const onOpenEdit = (row: any) => {
 // 	dialogTitle.value = '修改数据';
@@ -264,13 +294,8 @@ const onSaveData = (row: any) => {
 // 打开新增弹窗
 const onOpenAdd = () => {
 	dialogTitle.value = '新增数据';
-	dialogRef.value.openDialog();
+	dialogRef.value.openDialog(ruleForm.value);
 };
-
-//保存数据
-// const onSaveData = () => {
-	
-// };
 
 // // 打开新增弹窗
 // const onOpenAdd = () => {
