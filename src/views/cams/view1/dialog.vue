@@ -74,7 +74,9 @@ var props = defineProps({
 // 定义变量内容
 const dialogFormRef = ref();
 const isShowDialog = ref(false);
-const ruleForm = ref<any>({});
+const ruleForm = ref<any>({
+	
+});
 
 const dataTypeList = ref<any>([
 	{ label: 'SQLServer', value: 'sqlserver' },
@@ -98,15 +100,38 @@ const rules = ref<FormRules>({
 	card_mode: [{required: true, message: '请输入板卡型号', trigger: 'blur',},],
 });
 
-
 // 打开弹窗
 const openDialog = (row: any) => {
-	ruleForm.value = {};
-	if(row != undefined){
-		ruleForm.value = JSON.parse(JSON.stringify(row));
-	}
+	debugger
+	ruleForm.value = {
+		cam_data_state: row.cam_data_state,
+		cam_message: row.cam_message,
+		cam_update_state: row.cam_update_state,
+		cam_update_time: row.cam_update_time,
+		case_id: row.case_id,
+		create_by: row.create_by,
+		create_time: row.create_time,
+		// id: row.id,
+		id_num: row.id_num,
+		lis_data_state: row.lis_data_state,
+		lis_update_state: row.lis_update_state,
+		// specimen_num: row.specimen_num,
+	};
+	// if(row != undefined){
+	// 	ruleForm.value = JSON.parse(JSON.stringify(row));
+	// }
   	isShowDialog.value = true;
 };
+
+
+// // 打开弹窗
+// const openDialog = (row: any) => {
+// 	ruleForm.value = {};
+// 	if(row != undefined){
+// 		ruleForm.value = JSON.parse(JSON.stringify(row));
+// 	}
+//   	isShowDialog.value = true;
+// };
 // 关闭弹窗
 const closeDialog = () => {
 	emit("refresh");
