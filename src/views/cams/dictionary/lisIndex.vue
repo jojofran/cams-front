@@ -136,8 +136,8 @@ const onRowDel = (row: any) => {
 	})
 		.then(() => {
 			deleteMap(row.code);
-			getTableData();
 			ElMessage.success('删除成功');
+      getTableData();
 		})
 		.catch(() => {});
 };
